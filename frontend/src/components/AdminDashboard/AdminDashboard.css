@@ -1,0 +1,286 @@
+/* =========================================== */
+/* 1. Global Dashboard Layout */
+/* =========================================== */
+.dashboard-container {
+    min-height: 100vh;
+    background-color: #f5f6fa;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.dashboard-body {
+    display: flex;
+    padding-top: 65px; /* <-- PUSH CONTENT BELOW FIXED HEADER */
+}
+
+.main-content-area {
+    flex-grow: 1;
+    padding-left: 250px; /* Space for fixed sidebar */
+    padding-top: 30px;    /* <-- Standardized padding */
+    padding-right: 30px;   /* <-- Standardized padding */
+    padding-bottom: 30px;  /* <-- Standardized padding */
+}
+
+/* Base card styling */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    border: 1px solid #e0e0e0;
+}
+
+/* =========================================== */
+/* 2. Sidebar Styles (*** EDITED ***) */
+/* =========================================== */
+.sidebar {
+    width: 250px;
+    position: fixed;
+    top: 25px; /* <-- START BELOW FIXED HEADER */
+    left: 0;
+    bottom: 0;
+    background-color: #ffffff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    z-index: 1000; /* Below header, above content */
+}
+
+.sidebar-header { display: flex; align-items: center; padding: 0 20px 20px 20px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+.sidebar-logo-icon { width: 30px; height: 30px; margin-right: 10px; color: #dc3545; } /* RED */
+.sidebar-logo-text { font-size: 1.6em; font-weight: 700; color: #dc3545; } /* RED */
+
+/* --- THIS IS THE CHANGE --- */
+/* Removed .sidebar-profile and .profile-indicator */
+.admin-role-tag {
+    background-color: #f8d7da; /* Light red */
+    color: #dc3545; /* Dark red */
+    font-weight: 600;
+    font-size: 0.9em;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin: 0 20px 20px 20px;
+    text-align: center;
+}
+/* --- END CHANGE --- */
+
+.sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+.sidebar-nav li { cursor: pointer; }
+.sidebar-nav a { display: flex; align-items: center; padding: 12px 20px; color: #555; text-decoration: none; font-weight: 500; transition: all 0.2s ease; border-left: 4px solid transparent; }
+.sidebar-nav a i { margin-right: 15px; font-size: 1.1em; width: 20px; text-align: center; }
+.sidebar-nav li.active a { background-color: #f8d7da; color: #dc3545; border-left-color: #dc3545; } /* RED THEME */
+.sidebar-nav a:hover:not(.active) { background-color: #f0f2f5; color: #333; }
+.notification-badge { margin-left: auto; background-color: #dc3545; color: white; font-size: 0.75em; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
+.sidebar-toggle-button { display: none; }
+
+
+/* =========================================== */
+/* 3. Header Styles (REMOVED) */
+/* =========================================== */
+/* Universal header styles are in Common/LoggedInHeader.css */
+
+
+/* =========================================== */
+/* 4. Dashboard View Styles */
+/* =========================================== */
+.dashboard-content-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 30px;
+    margin-left: 25px;
+}
+.summary-cards-container {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+}
+.summary-card { display: flex; align-items: center; padding: 20px; }
+.summary-icon-container { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5em; margin-right: 15px; }
+.summary-icon-container.alert-bg { background-color: #f7a39b; color: #dc3545; } /* RED */
+.summary-icon-container.users-bg-red { background-color: #f8d7da; color: #dc3545; } /* RED */
+.summary-icon-container.cameras-bg { background-color: #a7e0aa; color: #28a745; }
+.summary-icon-container.attendance-bg { background-color: #d8c7f0; color: #6f42c1; }
+.summary-content { display: flex; flex-direction: column; }
+.summary-title { font-size: 0.9em; color: #888; margin-bottom: 5px; }
+.summary-value { font-size: 1.6em; font-weight: 700; color: #333; margin-bottom: 3px; }
+.summary-sub-value { font-size: 0.85em; font-weight: 500; }
+
+.campus-floor-plan { grid-column: 1 / -1; padding: 0; }
+.floor-plan-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-bottom: 1px solid #eee; }
+.floor-plan-header h3 { margin: 0; font-size: 1.2em; font-weight: 600; }
+.floor-plan-actions { display: flex; align-items: center; }
+.building-selector { padding: 8px 12px; border: 1px solid #ccc; border-radius: 5px; margin-right: 15px; background-color: white; font-size: 0.9em; }
+.full-screen-button { background-color: #f8d7da; color: #dc3545; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 0.9em; display: flex; align-items: center; } /* RED THEME */
+.full-screen-button i { margin-right: 8px; }
+.floor-plan-body { position: relative; padding: 20px 25px; overflow: hidden; }
+.floor-plan-image { max-width: 100%; height: auto; display: block; border: 1px solid #ddd; border-radius: 5px; }
+.floor-plan-legend { display: flex; justify-content: center; flex-wrap: wrap; padding: 15px 25px; border-bottom: 1px solid #eee; background-color: #fcfcfc; }
+.legend-item { display: flex; align-items: center; margin: 5px 15px; font-size: 0.9em; color: #555; }
+.legend-color-box { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); }
+.legend-color-box.green { background-color: #28a745; }
+.legend-color-box.red { background-color: #dc3545; }
+.legend-color-box.red-alt { background-color: #dc3545; } /* RED */
+.legend-color-box.purple { background-color: #6f42c1; }
+.floor-plan-stats { display: flex; justify-content: space-around; flex-wrap: wrap; padding: 20px 25px; text-align: center; }
+.floor-plan-stats > div { flex-basis: 24%; min-width: 120px; margin: 10px 0; }
+.stat-value { display: block; font-size: 1.5em; font-weight: 700; color: #dc3545; margin-bottom: 5px; } /* RED */
+
+.recent-alerts { grid-column: span 6; display: flex; flex-direction: column; }
+.recent-alerts h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.4em; }
+.alerts-list { flex-grow: 1; display: flex; flex-direction: column; }
+.alert-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+.alert-item:last-child { border-bottom: none; }
+.alert-type { width: 8px; height: 8px; border-radius: 50%; margin-right: 15px; flex-shrink: 0; }
+.alert-type.red { background-color: #dc3545; }
+.alert-type.yellow { background-color: #ffc107; }
+.alert-type.green { background-color: #28a745; }
+.alert-details { flex-grow: 1; }
+.alert-description { font-size: 0.95em; color: #333; margin-bottom: 3px; }
+.alert-time { font-size: 0.8em; color: #888; }
+.alert-status { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; font-weight: 600; color: white; margin-left: 15px; flex-shrink: 0; }
+
+.system-status { grid-column: span 6; display: flex; flex-direction: column; }
+.system-status h3 { margin-top: 0; margin-bottom: 20px; font-size: 1.4em; }
+.status-list { flex-grow: 1; display: flex; flex-direction: column; }
+.status-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+.status-item:last-child { border-bottom: none; }
+.status-details { flex-grow: 1; }
+.status-component { font-size: 0.95em; color: #333; margin-bottom: 3px; font-weight: 500; }
+.status-percentage { font-size: 0.85em; color: #888; }
+.status-badge { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; font-weight: 600; color: white; margin-left: 15px; flex-shrink: 0; }
+
+/* =========================================== */
+/* 5. User Management View Styles */
+/* =========================================== */
+.user-management-container { display: flex; flex-direction: column; gap: 30px; margin-left: 25px;}
+.user-summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+.user-summary-card { padding: 20px; }
+.user-summary-value { font-size: 2.5em; font-weight: 700; color: #dc3545; display: block; margin-bottom: 5px; } /* RED */
+.user-summary-title { font-size: 1.1em; color: #555; margin-bottom: 10px; display: block; }
+.user-summary-change { font-size: 0.9em; font-weight: 500; }
+.user-summary-change.green { color: #28a745; }
+.user-list-card { padding: 0; }
+.user-list-header { display: flex; justify-content: space-between; align-items: center; padding: 25px 25px 20px 25px; border-bottom: 1px solid #eee; }
+.user-list-header h2 { margin: 0; }
+.user-list-actions { display: flex; align-items: center; gap: 15px; }
+.user-search-bar { display: flex; align-items: center; background: #f5f6fa; border: 1px solid #e0e0e0; padding: 8px 12px; border-radius: 6px; }
+.user-search-bar i { color: #999; margin-right: 8px; }
+.user-search-bar input { border: none; background: none; outline: none; }
+.user-role-filter { padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.user-list-button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.user-list-button.export-button { background-color: #f0f2f5; color: #333; border: 1px solid #ddd; }
+.user-list-button.add-user-button { background-color: #dc3545; color: white; } /* RED */
+.user-table { width: 100%; border-collapse: collapse; }
+.user-table th, .user-table td { padding: 15px 25px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
+.user-table th { background-color: #fcfcfc; font-size: 0.9em; color: #777; }
+.user-info-cell { display: flex; align-items: center; gap: 10px; }
+.user-table-avatar { width: 36px; height: 36px; border-radius: 50%; }
+.user-table-name { display: block; font-weight: 500; color: #333; }
+.user-table-email { display: block; font-size: 0.9em; color: #888; }
+.role-tag { padding: 4px 10px; border-radius: 15px; font-size: 0.85em; font-weight: 500; color: white; }
+.role-tag.green { background-color: #28a745; }
+.role-tag.blue { background-color: #1a73e8; } /* This can stay for student role */
+.role-tag.red { background-color: #dc3545; } /* This is for admin role */
+.status-tag { padding: 4px 10px; border-radius: 15px; font-size: 0.85em; font-weight: 500; color: #333; background-color: #f0f2f5; }
+.status-tag.green { background-color: #e6f7ec; color: #28a745; }
+.status-tag.yellow { background-color: #fff8e6; color: #ffc107; }
+.status-tag.red { background-color: #fde8e8; color: #dc3545; }
+.action-button { background: none; border: none; cursor: pointer; padding: 5px 8px; border-radius: 4px; }
+.action-button i { color: #888; }
+.action-button:hover i { color: #dc3545; } /* RED */
+.action-button.delete-button:hover i { color: #dc3545; } /* RED */
+
+/* =========================================== */
+/* 6. Alert Center View Styles */
+/* =========================================== */
+.alert-center-container { padding: 0; margin-left: 25px;}
+.alert-center-header { padding: 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.alert-center-header h2 { margin: 0; }
+.alert-center-filters { display: flex; gap: 15px; }
+.alert-center-filters select { padding: 8px 12px; border-radius: 6px; border: 1px solid #e0e0e0; }
+.clear-filters-button { background-color: #f0f2f5; color: #333; border: 1px solid #ddd; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+.alert-center-list .alert-item { padding: 15px 25px; }
+
+/* =========================================== */
+/* 7. Reports View Styles */
+/* =========================================== */
+.reports-container h2 { margin-top: 0; margin-left: 25px; }
+.reports-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-left: 25px;}
+.report-card { background-color: #fdfdfd; border: 1px solid #eee; padding: 20px; border-radius: 8px; }
+.report-card h3 { margin-top: 0; }
+.report-card p { color: #666; margin-bottom: 20px; }
+
+/* =========================================== */
+/* 8. System Logs View Styles */
+/* =========================================== */
+.card {margin-left: 25px; }
+.logs-search { width: 100%; max-width: 500px; margin-bottom: 20px; }
+.logs-table { width: 100%; border-collapse: collapse; }
+.logs-table th, .logs-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+.logs-table th { background-color: #f9f9f9; }
+.logs-table td:first-child { font-family: 'Courier New', Courier, monospace; font-size: 0.9em; }
+
+/* =========================================== */
+/* 9. Settings View Styles */
+/* =========================================== */
+.settings-container h2 { margin-top: 0; margin-left: 25px;}
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-left: 25px;}
+.settings-card label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
+.settings-card input[type="text"], .settings-card select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px; }
+.settings-card .checkbox-setting { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.settings-card .checkbox-setting input { width: auto; margin-bottom: 0; }
+
+/* =========================================== */
+/* 10. Media Queries (Responsiveness) */
+/* =========================================== */
+@media (max-width: 1200px) {
+    .dashboard-content-grid { grid-template-columns: 1fr; }
+    .recent-alerts, .system-status { grid-column: 1 / -1; }
+    .settings-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 992px) {
+    .dashboard-body {
+        padding-top: 65px; /* Ensure content starts below header */
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0; /* No longer fixed */
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: 10px 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        z-index: 999;
+    }
+    .sidebar-toggle-button { display: block; background: none; border: none; font-size: 1.2em; cursor: pointer; }
+    .sidebar-header { border: none; margin: 0; padding: 0; }
+    .admin-role-tag, .sidebar-nav { display: none; } /* Hide role tag and nav on mobile */
+    
+    .main-content-area {
+        padding-left: 0; /* No more fixed sidebar */
+        padding: 20px; /* Reset padding */
+    }
+    .user-summary-cards { grid-template-columns: 1fr; }
+    .user-list-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .user-list-actions { flex-direction: column; width: 100%; gap: 10px; }
+    .user-search-bar, .user-role-filter, .user-list-button { width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .floor-plan-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .floor-plan-actions { width: 100%; }
+    .floor-plan-stats { flex-wrap: wrap; }
+    .floor-plan-stats > div { flex-basis: 48%; }
+    .reports-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .main-content-area { padding: 15px; }
+    .card { padding: 15px; }
+    .floor-plan-stats > div { flex-basis: 100%; }
+}
+

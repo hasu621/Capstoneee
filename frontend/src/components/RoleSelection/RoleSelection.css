@@ -1,0 +1,113 @@
+/* Base styles for the selection page */
+.role-selection-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 30px 20px;
+    background-color: #f0f2f5;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+}
+
+.role-selection-title {
+    font-size: 2.5rem;
+    color: #dc3545; /* Changed from #1a73e8 */
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.role-selection-subtitle {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 40px;
+    max-width: 600px;
+}
+
+/* Grid for Role Cards */
+.role-cards-grid {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap; /* Allows cards to wrap on smaller screens */
+    justify-content: center;
+}
+
+/* Base style for the interactive role card (Link) */
+.role-card {
+    text-decoration: none;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 30px;
+    width: 280px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #dc3545; /* Changed from #1a73e8 */
+}
+
+/* Card content */
+.role-card h2 {
+    font-size: 1.5rem;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.role-card p {
+    font-size: 0.95rem;
+    color: #777;
+}
+
+/* Icon styling */
+.role-icon {
+    font-size: 3.5rem;
+    margin-bottom: 10px;
+}
+
+/* Specific styling for each role */
+.role-card.admin .role-icon {
+    color: #dc3545; /* Red for high importance */
+}
+
+.role-card.faculty .role-icon {
+    color: #dc3545; /* Yellow/Orange for academic */
+}
+
+.role-card.student .role-icon {
+    color: #dc3545; /* Changed from #1a73e8 */
+}
+
+/* --- Responsiveness --- */
+@media (max-width: 992px) {
+    .role-cards-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .role-card {
+        width: 90%;
+        max-width: 350px;
+        padding: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .role-selection-title {
+        font-size: 2rem;
+    }
+    .role-selection-subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+    .role-icon {
+        font-size: 3rem;
+    }
+}

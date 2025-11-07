@@ -1,0 +1,162 @@
+.universal-header {
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    height: 65px;
+    z-index: 1001;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    color: white; /* Default text color */
+}
+
+.universal-header-logo {
+    display: flex;
+    align-items: center;
+    font-size: 1.6em;
+    font-weight: 700;
+}
+
+.header-logo-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    filter: brightness(0) invert(1); /* Makes any icon white */
+}
+
+.universal-search-bar {
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-left: 50px;
+    width: 350px;
+    transition: background-color 0.3s;
+}
+
+.universal-search-bar i {
+    margin-right: 8px;
+}
+
+.universal-search-input {
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 0.95em;
+    width: 100%;
+}
+/* This makes the placeholder text match the theme text color */
+.universal-search-input::placeholder {
+    color: currentColor;
+    opacity: 0.7;
+}
+
+.universal-header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+}
+
+.universal-header-actions .icon-button {
+    background: none;
+    border: none;
+    font-size: 1.3em;
+    cursor: pointer;
+    margin-right: 20px;
+    position: relative;
+    padding: 5px;
+}
+
+.universal-header-actions .notification-dot {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    background-color: #ffc107; /* Yellow for contrast */
+    color: #333;
+    border-radius: 50%;
+    font-size: 0.6em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid; /* Color will be set by inline style */
+}
+
+/* --- LOGOUT BUTTON STYLE (*** THIS IS THE FIX ***) --- */
+.universal-header-actions .header-logout-button {
+    display: flex;
+    align-items: center;
+    background: none;
+    
+    /* This is the missing line that makes it visible */
+    border: 1px solid rgba(255, 255, 255, 0.7); 
+
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.2em;
+    transition: background-color 0.2s;
+}
+.universal-header-actions .header-logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+/* --- END LOGOUT BUTTON STYLE --- */
+
+.universal-header-actions .user-menu {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.universal-header-actions .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.universal-header-actions .user-role {
+    font-weight: 500;
+    margin-right: 5px;
+}
+.universal-header-actions .dropdown-icon {
+    font-size: 0.8em;
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+    .universal-header-logo {
+        display: none; /* Hide logo on mobile */
+    }
+    .universal-search-bar {
+        margin-left: 0;
+        width: 100%;
+        margin-right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .universal-header {
+        padding: 0 15px;
+    }
+    .universal-header-actions .user-role,
+    .universal-header-actions .dropdown-icon {
+        display: none; /* Hide user name */
+    }
+    .universal-header-actions .header-logout-button {
+        font-size: 1.1em;
+        padding: 8px;
+        margin-right: 10px;
+    }
+     .universal-header-actions .icon-button {
+         margin-right: 10px;
+     }
+}
+
