@@ -1,0 +1,419 @@
+/* Attendance.css - Attendance Management Page Styles */
+
+.attendance-management {
+    padding: 24px;
+    background: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* Header Section */
+.attendance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.attendance-header h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.attendance-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Statistics Cards Grid */
+.attendance-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.attendance-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.attendance-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.stat-value.green {
+    color: #28a745;
+}
+
+.stat-value.red {
+    color: #dc3545;
+}
+
+.stat-value.orange {
+    color: #ffc107;
+}
+
+.stat-sub {
+    font-size: 12px;
+    color: #999;
+}
+
+/* Today's Classes Section */
+.today-classes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.today-class-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #A62525;
+    transition: all 0.2s;
+}
+
+.today-class-item:hover {
+    background: #f0f1f3;
+    transform: translateX(4px);
+}
+
+.today-class-item.upcoming {
+    border-left-color: #6c757d;
+    opacity: 0.8;
+}
+
+.class-info h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+}
+
+.class-info p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.class-attendance-rate {
+    font-size: 24px;
+    font-weight: 700;
+    color: #28a745;
+    margin: 12px 0;
+}
+
+.attendance-progress {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 12px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.class-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+    border-color: #A62525;
+    color: #A62525;
+}
+
+.action-btn i {
+    font-size: 13px;
+}
+
+/* Attendance Table */
+.attendance-table-wrapper {
+    overflow-x: auto;
+    margin-top: 16px;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+.attendance-table thead {
+    background: #f8f9fa;
+}
+
+.attendance-table th {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.attendance-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.attendance-table tbody tr {
+    transition: background 0.2s;
+}
+
+.attendance-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.rate-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.rate-badge.green {
+    background: #d4edda;
+    color: #155724;
+}
+
+.rate-badge.orange {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.rate-badge.red {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: #A62525;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: #f8f9fa;
+    color: #8a1f1f;
+}
+
+/* Bottom Grid Section */
+.attendance-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+/* Low Attendance List */
+.low-attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.low-attendance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.low-attendance-item:hover {
+    background: #f0f1f3;
+}
+
+.student-info {
+    flex: 1;
+}
+
+.student-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.student-class {
+    font-size: 13px;
+    color: #666;
+}
+
+.student-rate {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.student-rate.red {
+    color: #dc3545;
+}
+
+.student-rate.orange {
+    color: #ffc107;
+}
+
+/* Attendance Trends */
+.trends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.trend-item:hover {
+    background: #f0f1f3;
+    transform: translateX(4px);
+}
+
+.trend-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.trend-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.trend-rate {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.trend-rate.green {
+    color: #28a745;
+}
+
+.trend-rate.orange {
+    color: #ffc107;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .attendance-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .attendance-management {
+        padding: 16px;
+    }
+
+    .attendance-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .attendance-actions {
+        width: 100%;
+    }
+
+    .attendance-actions button {
+        flex: 1;
+    }
+
+    .attendance-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .class-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .attendance-table {
+        font-size: 12px;
+    }
+
+    .attendance-table th,
+    .attendance-table td {
+        padding: 10px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .attendance-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-value {
+        font-size: 28px;
+    }
+}

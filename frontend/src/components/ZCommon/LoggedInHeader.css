@@ -1,15 +1,29 @@
+/* =========================================== */
+/* 3. Universal Header Styles */
+/* =========================================== */
 .universal-header {
     display: flex;
     align-items: center;
     padding: 0 30px;
     height: 65px;
-    z-index: 1001;
+    z-index: 1001; /* Must be on top */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     color: white; /* Default text color */
+}
+
+/* --- EDITED: Logo Link Wrapper --- */
+.header-logo-link {
+    text-decoration: none; /* Remove underline from link */
+    display: flex;
+    align-items: center;
+    color: inherit; /* Inherit text color (white) */
+}
+.header-logo-link:hover {
+    opacity: 0.9; /* Simple hover effect */
 }
 
 .universal-header-logo {
@@ -23,7 +37,9 @@
     width: 30px;
     height: 30px;
     margin-right: 10px;
-    filter: brightness(0) invert(1); /* Makes any icon white */
+    /* This filter assumes a dark icon and makes it white */
+    /* If your icon is already white, remove this */
+    filter: brightness(0) invert(1); 
 }
 
 .universal-search-bar {
@@ -46,10 +62,10 @@
     outline: none;
     font-size: 0.95em;
     width: 100%;
+    color: inherit; /* Inherit text color (white) */
 }
-/* This makes the placeholder text match the theme text color */
 .universal-search-input::placeholder {
-    color: currentColor;
+    color: currentColor; /* Use the inherited text color */
     opacity: 0.7;
 }
 
@@ -59,7 +75,14 @@
     align-items: center;
 }
 
-.universal-header-actions .icon-button {
+/* --- Dropdown Containers --- */
+.notification-bell-container,
+.profile-menu-container {
+    position: relative; /* Anchor for the dropdown */
+}
+
+/* --- Bell Icon --- */
+.icon-button {
     background: none;
     border: none;
     font-size: 1.3em;
@@ -69,7 +92,20 @@
     padding: 5px;
 }
 
-.universal-header-actions .notification-dot {
+.circular-icon-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.circular-icon-button:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.notification-dot {
     position: absolute;
     top: -5px;
     right: -8px;
@@ -86,35 +122,20 @@
     border: 2px solid; /* Color will be set by inline style */
 }
 
-/* --- LOGOUT BUTTON STYLE (*** THIS IS THE FIX ***) --- */
-.universal-header-actions .header-logout-button {
+/* --- Profile Menu --- */
+.user-menu {
     display: flex;
     align-items: center;
-    background: none;
-    
-    /* This is the missing line that makes it visible */
-    border: 1px solid rgba(255, 255, 255, 0.7); 
-
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin-right: 15px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 1.2em;
+    padding: 5px 8px;
+    border-radius: 6px;
     transition: background-color 0.2s;
 }
-.universal-header-actions .header-logout-button:hover {
+.user-menu:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
-/* --- END LOGOUT BUTTON STYLE --- */
 
-.universal-header-actions .user-menu {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-.universal-header-actions .user-avatar {
+.user-avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -122,13 +143,171 @@
     margin-right: 10px;
 }
 
-.universal-header-actions .user-role {
+.user-role {
     font-weight: 500;
-    margin-right: 5px;
+    margin-right: 8px;
 }
-.universal-header-actions .dropdown-icon {
+.dropdown-icon {
     font-size: 0.8em;
+    transition: transform 0.2s ease;
 }
+.dropdown-icon.open {
+    transform: rotate(180deg);
+}
+
+
+/* --- Profile Dropdown Menu --- */
+.header-dropdown-menu {
+    position: absolute;
+    top: 55px; /* Position below header */
+    right: 0;
+    width: 220px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1002;
+    overflow: hidden; /* To get rounded corners on items */
+}
+
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    text-decoration: none;
+    font-size: 0.95em;
+    font-weight: 500;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+.header-dropdown-item i {
+    width: 15px; /* Align icons */
+    text-align: center;
+    color: #888;
+}
+.header-dropdown-item:hover {
+    background-color: #f5f5f5;
+}
+.dropdown-logout-button {
+    border-top: 1px solid #f0f0f0;
+}
+.dropdown-logout-button:hover {
+    color: #dc3545; /* Red on hover */
+    background-color: #fbe9e7;
+}
+.dropdown-logout-button:hover i {
+    color: #dc3545;
+}
+
+
+/* --- Notification Dropdown Menu --- */
+.notification-dropdown-menu {
+    position: absolute;
+    top: 55px; /* Position below header */
+    right: -20px;
+    width: 360px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 1002;
+    overflow: hidden;
+}
+
+.notification-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.notification-dropdown-header h3 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #333;
+}
+.notification-dropdown-header .mark-as-read {
+    font-size: 0.8em;
+    color: #dc3545;
+    font-weight: 500;
+    cursor: pointer;
+}
+.notification-dropdown-header .mark-as-read:hover {
+    text-decoration: underline;
+}
+
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.notification-item:hover {
+    background-color: #f9f9f9;
+}
+.notification-item:last-child {
+    border-bottom: none;
+}
+.notification-item.unread {
+    background-color: #fcf4f5; /* Light red */
+}
+.notification-item.unread:hover {
+    background-color: #fbe9e7;
+}
+
+.notification-icon-bg {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background-color: #f0f2f5;
+    color: #555;
+}
+.notification-item.unread .notification-icon-bg {
+    background-color: #f8d7da;
+    color: #dc3545;
+}
+
+.notification-content {
+    flex-grow: 1;
+}
+.notification-text {
+    font-size: 0.9em;
+    color: #333;
+    margin: 0 0 5px 0;
+    line-height: 1.4;
+}
+.notification-time {
+    font-size: 0.8em;
+    color: #888;
+}
+
+.notification-dropdown-footer {
+    padding: 12px 20px;
+    text-align: center;
+    border-top: 1px solid #f0f0f0;
+    background-color: #fcfcfc;
+}
+.notification-dropdown-footer a {
+    text-decoration: none;
+    color: #dc3545;
+    font-weight: 500;
+    font-size: 0.9em;
+}
+.notification-dropdown-footer a:hover {
+    text-decoration: underline;
+}
+
 
 /* --- Responsive --- */
 @media (max-width: 992px) {
@@ -150,13 +329,7 @@
     .universal-header-actions .dropdown-icon {
         display: none; /* Hide user name */
     }
-    .universal-header-actions .header-logout-button {
-        font-size: 1.1em;
-        padding: 8px;
+    .icon-button {
         margin-right: 10px;
     }
-     .universal-header-actions .icon-button {
-         margin-right: 10px;
-     }
 }
-

@@ -1,18 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom'; // Correct Link import
 import './RoleSelection.css';
+import Footer from '../ZCommon/Footer';
 
 const RoleSelection = () => {
   return (
-    <div className="role-selection-container">
+    <>
+      <div className="role-selection-container">
       <h1 className="role-selection-title">Select Your Role</h1>
       <p className="role-selection-subtitle">Please choose your access level to proceed to the dashboard.</p>
       <div className="role-cards-grid">
+        {/* --- THIS IS THE FIX --- */}
+        {/* Changed the link from "/admin" to "/admin-dashboard" */}
         <Link to="/admin-dashboard" className="role-card admin">
           <i className="fas fa-user-shield role-icon"></i>
           <h2>Administrator</h2>
           <p>Full system control and oversight.</p>
         </Link>
+        {/* --- END FIX --- */}
+        
         <Link to="/faculty-dashboard" className="role-card faculty">
           <i className="fas fa-chalkboard-teacher role-icon"></i>
           <h2>Faculty</h2>
@@ -25,8 +31,10 @@ const RoleSelection = () => {
         </Link>
       </div>
     </div>
+    <Footer />
+    </>
+    
   );
 };
 
 export default RoleSelection;
-// CSS remains the same as previously provided

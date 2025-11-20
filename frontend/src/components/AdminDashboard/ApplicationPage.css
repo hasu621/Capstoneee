@@ -1,0 +1,200 @@
+/* =========================================== */
+/* 7. Application Page Styles */
+/* =========================================== */
+.application-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-left: 30px;
+}
+
+/* --- Filter Bar --- */
+.app-filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.app-filter-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-by-label {
+    font-size: 0.9em;
+    color: #555;
+    font-weight: 500;
+}
+
+.app-filter-select {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    font-size: 0.9em;
+}
+
+.app-search-bar {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+.app-search-bar i {
+    color: #999;
+    margin-right: 8px;
+}
+.app-search-bar input {
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 0.9em;
+}
+
+.add-user-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+.add-user-button:hover {
+    background-color: #c82333;
+}
+
+/* --- Application List Card --- */
+.app-list-card {
+    padding: 0; /* Remove base card padding */
+}
+
+.app-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #eee;
+}
+.app-list-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+.app-table-container {
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scroll on mobile */
+}
+
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* Force scroll on small screens */
+}
+
+.app-table th, .app-table td {
+    padding: 15px 25px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.app-table th {
+    background-color: #fcfcfc;
+    font-size: 0.85em; /* Smaller font for headers */
+    color: #777;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.user-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-table-avatar {
+    font-size: 2.2em;
+    color: #ccc;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f2f5;
+    border-radius: 50%;
+}
+
+.user-table-name {
+    display: block;
+    font-weight: 500;
+    color: #333;
+}
+
+.user-table-email {
+    display: block;
+    font-size: 0.9em;
+    color: #888;
+}
+
+.role-tag {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: white;
+}
+.role-tag.green { background-color: #28a745; }
+.role-tag.blue { background-color: #1a73e8; }
+.role-tag.red { background-color: #dc3545; }
+
+.status-tag {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+.status-tag.green { background-color: #e6f7ec; color: #28a745; }
+.status-tag.yellow { background-color: #fff8e6; color: #e6a800; }
+.status-tag.red { background-color: #fde8e8; color: #dc3545; }
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: #888;
+    font-size: 1.1em;
+}
+.action-button:hover {
+    color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .app-filter-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .app-filter-select, .app-search-bar, .add-user-button {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}

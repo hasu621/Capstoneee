@@ -1,0 +1,188 @@
+/* =========================================== */
+/* 8. Reports Page Styles */
+/* =========================================== */
+.reports-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding-left: 30px;
+}
+
+.reports-main-title {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+/* --- Top Report Cards --- */
+.reports-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.report-type-card {
+    padding: 25px;
+}
+
+.report-type-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px; /* Rounded square from image */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+/* Icon colors from image */
+.report-type-card:nth-child(1) .report-type-icon { background-color: #e6f7ff; color: #1a73e8; } /* Blue */
+.report-type-card:nth-child(2) .report-type-icon { background-color: #e6f7ec; color: #28a745; } /* Green */
+.report-type-card:nth-child(3) .report-type-icon { background-color: #f4e8ff; color: #6f42c1; } /* Purple */
+
+
+.report-type-title {
+    font-size: 1.3em;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.report-type-description {
+    font-size: 0.95em;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.view-reports-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.view-reports-button:hover {
+    background-color: #f8f9fa;
+    color: #dc3545; /* Red hover */
+    border-color: #f8d7da; /* Light red border hover */
+}
+.view-reports-button i {
+    margin-right: 8px;
+}
+
+/* --- Recent Reports Table --- */
+.recent-reports-card {
+    padding: 0; /* Remove base card padding */
+}
+
+.recent-reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+.recent-reports-header h2 {
+    margin: 0;
+    font-size: 1.3em;
+}
+
+.recent-reports-filters {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.recent-reports-filters select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    background-color: white;
+    font-size: 0.9em;
+}
+
+.export-all-button {
+    background-color: #dc3545; /* Red */
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+.export-all-button:hover {
+    background-color: #c82333;
+}
+
+.reports-table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.recent-reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.recent-reports-table th, .recent-reports-table td {
+    padding: 15px 25px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.recent-reports-table th {
+    background-color: #fcfcfc;
+    font-size: 0.85em;
+    color: #777;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.report-tag {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+.report-tag.blue { background-color: #e6f7ff; color: #1a73e8; }
+.report-tag.red { background-color: #fde8e8; color: #dc3545; }
+.report-tag.purple { background-color: #f4e8ff; color: #6f42c1; }
+
+.status-tag {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+.status-tag.green { background-color: #e6f7ec; color: #28a745; }
+.status-tag.grey { background-color: #f0f2f5; color: #6c757d; }
+
+.action-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: #888;
+    font-size: 1.1em;
+    transition: color 0.2s;
+}
+.action-button:hover {
+    color: #dc3545; /* Red hover */
+}
