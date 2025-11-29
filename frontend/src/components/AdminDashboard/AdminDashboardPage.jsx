@@ -28,31 +28,31 @@ const SummaryCards = () => {
       <SummaryCard 
         iconClass="fas fa-bell" 
         title="Active Alerts" 
-        value="5" 
-        subValue="2 Critical" 
+        value="0" 
+        subValue="No Critical" 
         subValueColor="#dc3545" 
         iconBgClass="alert-bg"
       />
       <SummaryCard 
         iconClass="fas fa-users" 
         title="Total Users" 
-        value="2,847" 
+        value="100" 
         subValue="+12 today" 
         subValueColor="#28a745" 
-        iconBgClass="users-bg-red" // RED THEME
+        iconBgClass="users-bg-red"
       />
       <SummaryCard 
         iconClass="fas fa-video" 
         title="Active Cameras" 
-        value="48/52" 
-        subValue="4 Offline" 
+        value="2/2" 
+        subValue="1 Offline" 
         subValueColor="#ffc107" 
         iconBgClass="cameras-bg"
       />
       <SummaryCard 
         iconClass="fas fa-shield-alt" 
         title="Attendance" 
-        value="98.5%" 
+        value="100%" 
         subValue="Excellent" 
         subValueColor="#28a745" 
         iconBgClass="attendance-bg"
@@ -68,13 +68,13 @@ const SummaryCards = () => {
 // Mock data for room status (1 camera per room)
 const roomData = {
     room1: {
-        name: "Room 1",
+        name: "Room 324",
         available: true,
-        cameraOnline: true,
+        cameraOnline: false,
     },
     room2: {
-        name: "Room 2",
-        available: false,
+        name: "Room 326",
+        available: true,
         cameraOnline: false,
     }
 };

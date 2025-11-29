@@ -10,17 +10,17 @@ const UserManagementPage = () => (
         {/* Summary Cards */}
         <div className="user-summary-cards">
             <div className="card user-summary-card">
-                <span className="user-summary-value">156</span>
+                <span className="user-summary-value">2</span>
                 <span className="user-summary-title">Administrators</span>
-                <span className="user-summary-change green">+2 this month</span>
+                <span className="user-summary-change green">+1 this month</span>
             </div>
             <div className="card user-summary-card">
-                <span className="user-summary-value">892</span>
+                <span className="user-summary-value">15</span>
                 <span className="user-summary-title">Faculty Members</span>
-                <span className="user-summary-change green">+15 this month</span>
+                <span className="user-summary-change green">+5 this month</span>
             </div>
             <div className="card user-summary-card">
-                <span className="user-summary-value">1,799</span>
+                <span className="user-summary-value">100</span>
                 <span className="user-summary-title">Students</span>
                 <span className="user-summary-change green">+67 this month</span>
             </div>
@@ -41,9 +41,6 @@ const UserManagementPage = () => (
                         <option>Faculty</option>
                         <option>Student</option>
                     </select>
-                    <button className="user-list-button export-button">
-                        <i className="fas fa-upload"></i> Export Users
-                    </button>
                     <button className="user-list-button add-user-button">
                         <i className="fas fa-plus"></i> Add User
                     </button>

@@ -41,7 +41,7 @@ function App() {
           {/* Main public routes */}
           <Route path="/" element={<LandingPage />} />
           {/* Ito yung bagong route na maghahandle ng registration based sa role */}
-        <Route path="/register/:role" element={<RegistrationPage />} />
+          <Route path="/register/:role" element={<RegistrationPage />} />
           <Route path="/select-role" element={<RoleSelection />} />
 
           {/* --- Admin Routes (using AdminLayout) --- */}

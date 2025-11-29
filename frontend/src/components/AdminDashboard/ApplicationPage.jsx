@@ -6,7 +6,7 @@ import './ApplicationPage.css'; // New CSS file for this page
 // ===========================================
 
 const ApplicationPage = () => {
-  
+
   // Mock data for the table based on the image
   const applications = [
     {
@@ -81,20 +81,15 @@ const ApplicationPage = () => {
           <div className="app-search-bar">
             <i className="fas fa-search"></i>
             <input type="text" placeholder="Search..." />
+            
           </div>
-        </div>
-        <div className="app-filter-right">
-          <button className="add-user-button">
-            <i className="fas fa-plus"></i> Add User
-          </button>
         </div>
       </div>
 
       {/* Applications Table */}
       <div className="card app-list-card">
         <div className="app-list-header">
-          <h2>All Users</h2>
-          {/* You can add a toggle icon here if needed */}
+          <h2>Application List</h2>
         </div>
         
         <div className="app-table-container">
@@ -106,7 +101,7 @@ const ApplicationPage = () => {
                 <th>Department</th>
                 <th>Status</th>
                 <th>Date Applied</th>
-                <th></th> {/* Actions column */}
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -137,7 +132,7 @@ const ApplicationPage = () => {
         </div>
       </div>
     </div>
-  );
+   );
 };
 
 export default ApplicationPage;

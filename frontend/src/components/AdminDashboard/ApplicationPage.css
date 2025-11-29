@@ -15,6 +15,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 15px;
+    width: 100%; 
 }
 
 .app-filter-left {
@@ -22,6 +23,7 @@
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
+    flex-grow: 1; 
 }
 
 .filter-by-label {
@@ -45,7 +47,10 @@
     border: 1px solid #e0e0e0;
     padding: 8px 12px;
     border-radius: 6px;
+    max-width: 400px; /* Adjust this value (e.g., 250px, 500px) as needed */
+    flex-grow: 1;
 }
+
 .app-search-bar i {
     color: #999;
     margin-right: 8px;
@@ -55,24 +60,7 @@
     background: none;
     outline: none;
     font-size: 0.9em;
-}
-
-.add-user-button {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-    transition: background-color 0.2s;
-}
-.add-user-button:hover {
-    background-color: #c82333;
+    flex-grow: 1;
 }
 
 /* --- Application List Card --- */

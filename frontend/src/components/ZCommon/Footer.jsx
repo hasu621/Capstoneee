@@ -14,10 +14,10 @@ const Footer = () => {
                     </p>
                     {/* Social icons from the image (optional) */}
                     <div className="footer-social-icons">
-                        <a href="#" className="social-icon fb"><i className="fab fa-facebook-f"></i></a>
-                        <a href="#" className="social-icon tw"><i className="fab fa-twitter"></i></a>
-                        <a href="#" className="social-icon ig"><i className="fab fa-instagram"></i></a>
-                        <a href="#" className="social-icon li"><i className="fab fa-linkedin-in"></i></a>
+                        <a href="#!" className="social-icon fb"><i className="fab fa-facebook-f"></i></a>
+                        <a href="#!" className="social-icon tw"><i className="fab fa-twitter"></i></a>
+                        <a href="#!" className="social-icon ig"><i className="fab fa-instagram"></i></a>
+                        <a href="#!" className="social-icon li"><i className="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
 
