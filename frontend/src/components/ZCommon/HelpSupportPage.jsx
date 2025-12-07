@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HelpSupportPage.css'; // New CSS file
-import LoggedInHeader from './LoggedInHeader'; // Import the universal header
+import Header from '../ZCommon/Header';
 import Footer from './Footer'; // Import the universal footer
 
 // --- Mock theme and user for standalone pages ---
@@ -74,7 +74,7 @@ const HelpSupportPage = () => {
 
     return (
         <>
-            <LoggedInHeader theme={redTheme} user={mockUser} />
+            <Header theme={redTheme} user={mockUser} />
             <div className="help-page-container">
                 <div className="help-header-bar">
                     <button onClick={handleBack} className="help-back-button">

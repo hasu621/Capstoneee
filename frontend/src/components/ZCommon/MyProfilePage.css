@@ -5,16 +5,16 @@
 /* --- Main Layout --- */
 .profile-page-container {
     max-width: 1100px;
-    margin: 0 auto; /* Center the page content, remove top margin */
-    padding: 30px 20px 30px 20px; /* Add padding top/bottom */
+    margin: 0 auto;
+    padding: 30px 20px 30px 20px;
     display: flex;
     flex-direction: column;
     gap: 30px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f5f6fa; /* Page background */
+    background-color: #f5f6fa;
     
-    /* --- Add padding to clear the fixed LoggedInHeader --- */
-    padding-top: 95px; /* 65px for header + 30px top padding */
+    /* Clear fixed header */
+    padding-top: 95px; 
 }
 
 /* --- Header Bar --- */
@@ -24,14 +24,12 @@
     align-items: center;
 }
 
-/* --- Wrapper for back button and title --- */
 .profile-header-left {
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-/* --- Back Button Style --- */
 .profile-back-button {
     background-color: #fff;
     border: 1px solid #e0e0e0;
@@ -39,7 +37,7 @@
     font-size: 1em;
     height: 40px;
     width: 40px;
-    border-radius: 50%; /* Make it circular */
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -60,7 +58,7 @@
 }
 
 .profile-edit-button {
-    background-color: #dc3545; /* Red */
+    background-color: #dc3545;
     color: white;
     border: none;
     padding: 10px 18px;
@@ -76,11 +74,14 @@
 .profile-edit-button:hover {
     background-color: #c82333;
 }
-.profile-edit-button i {
-    margin-right: 4px;
-}
 
 /* --- Summary Card --- */
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
 .profile-summary-card {
     display: flex;
     align-items: center;
@@ -123,13 +124,10 @@
     padding: 5px 10px;
     border-radius: 15px;
     margin-top: 10px;
-    align-self: flex-start; /* Don't stretch */
-}
-.profile-status-tag i {
-    margin-right: 5px;
+    align-self: flex-start;
 }
 
-/* --- Info Grid & Cards --- */
+/* --- Info Grid --- */
 .profile-info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -153,7 +151,7 @@
 }
 
 .full-width-card {
-    grid-column: 1 / -1; /* Make card span both columns */
+    grid-column: 1 / -1;
 }
 
 /* --- Form Fields --- */
@@ -169,93 +167,45 @@
     margin-bottom: 5px;
 }
 
+/* --- 1. DISABLED STATE (Read-Only) --- */
 .profile-input-disabled {
     font-size: 1em;
     padding: 10px 12px;
-    background-color: #f8f9fa; /* Light grey */
-    border: 1px solid #e0e0e0;
+    background-color: #f8f9fa; /* Light grey background */
+    border: 1px solid #e0e0e0; /* Subtle border */
     border-radius: 6px;
     color: #333;
     font-family: inherit;
-    /* Remove browser default styles for disabled inputs */
-    opacity: 1;
-    -webkit-text-fill-color: #333;
-    -webkit-opacity: 1;
-}
-/* Style for date input's calendar icon */
-.profile-input-disabled[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0.6;
-}
-.profile-input-disabled[type="date"] {
-    color: #333;
+    resize: none; /* Prevent resize on textarea when disabled */
 }
 
-
-/* --- Account Settings --- */
-.setting-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-.setting-row:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-.setting-row:first-of-type {
-    padding-top: 0;
-}
-
-.setting-info {
-    display: flex;
-    flex-direction: column;
-}
-.setting-info strong {
-    font-size: 1.05em;
-    font-weight: 500;
-    color: #333;
-}
-.setting-info span {
-    font-size: 0.9em;
-    color: #777;
-}
-
-.setting-button {
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    color: #555;
-    padding: 8px 15px;
+/* --- 2. EDITABLE STATE (Active Editing) --- */
+.profile-input-editable {
+    font-size: 1em;
+    padding: 10px 12px;
+    background-color: #ffffff; /* White background */
+    border: 1px solid #ccc;    /* Darker border to show it's clickable */
     border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-    transition: all 0.2s;
-}
-.setting-button:hover {
-    background-color: #f8f9fa;
-    color: #dc3545; /* Red */
-    border-color: #f8d7da; /* Light red */
-}
-.setting-button i {
-    color: #888;
-    transition: color 0.2s;
-}
-.setting-button:hover i {
-    color: #dc3545; /* Red */
+    color: #000;
+    font-family: inherit;
+    transition: all 0.2s ease-in-out;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Slight inner shadow */
 }
 
-/* --- Bottom Action Buttons --- */
+/* Highlight when user clicks inside */
+.profile-input-editable:focus {
+    outline: none;
+    border-color: #A62525; /* Theme Red */
+    box-shadow: 0 0 0 3px rgba(166, 37, 37, 0.1); /* Red glow */
+}
+
+/* --- Buttons --- */
 .profile-action-buttons {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 15px;
-    padding: 20px 0; /* Add padding to separate from card */
+    padding: 20px 0;
 }
 
 .profile-cancel-button, .profile-save-button {
@@ -270,6 +220,7 @@
     font-size: 0.95em;
     transition: all 0.2s;
 }
+
 .profile-cancel-button {
     background-color: #f0f2f5;
     color: #555;
@@ -280,56 +231,160 @@
 }
 
 .profile-save-button {
-    background-color: #dc3545; /* Red */
+    background-color: #28a745; /* Green for Save */
     color: white;
 }
 .profile-save-button:hover {
-    background-color: #c82333;
+    background-color: #218838;
+}
+
+/* --- Settings Row (Static) --- */
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.setting-row:last-child { border-bottom: none; }
+
+.setting-info { display: flex; flex-direction: column; }
+.setting-info strong { font-size: 1.05em; font-weight: 500; color: #333; }
+.setting-info span { font-size: 0.9em; color: #777; }
+
+.setting-button {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    color: #555;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+.setting-button:hover {
+    background-color: #f8f9fa;
+    color: #dc3545;
+    border-color: #f8d7da;
 }
 
 /* --- Responsive --- */
 @media (max-width: 992px) {
-    .profile-info-grid {
-        grid-template-columns: 1fr;
-    }
-}
-@media (max-width: 768px) {
-    .profile-summary-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    .profile-summary-info {
-        align-items: center;
-    }
-    .setting-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    .setting-button {
-        width: 100%;
-        justify-content: center;
-    }
-    .profile-action-buttons {
-        flex-direction: column;
-        align-items: stretch;
-    }
+    .profile-info-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-    .profile-page-container {
-        padding: 10px;
-        margin: 10px 0;
-        padding-top: 75px; /* 65px header + 10px padding */
-    }
-    .profile-header-bar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-    .profile-edit-button {
-        justify-content: center;
-    }
-    .profile-header-left {
-        justify-content: space-between;
-    }
+    .profile-page-container { padding: 10px; padding-top: 75px; }
+    .profile-header-bar { flex-direction: column; align-items: stretch; gap: 15px; }
+}
+
+
+/* ... existing css ... */
+
+/* =========================================== */
+/* PASSWORD MODAL STYLES */
+/* =========================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Must be higher than header */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-box {
+    background: white;
+    width: 400px;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2em;
+}
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #888;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.form-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #555;
+}
+.modal-input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+.modal-btn.primary {
+    background-color: #A62525;
+    color: white;
+}
+.modal-btn.primary:disabled {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+}
+
+.error-msg {
+    background-color: #ffe6e6;
+    color: #d63031;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }

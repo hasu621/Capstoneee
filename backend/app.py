@@ -5,6 +5,7 @@ import base64
 import pickle
 import json
 import bcrypt
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_config import DB_CONFIG
@@ -80,7 +81,7 @@ def process_face_embedding(face_capture_data_url):
         return None, "Not Registered"
 
 # ==========================================
-# API: CHECK FACE (Para sa Green Box validation) <--- KULANG ITO KANINA
+# API: CHECK FACE (Para sa Green Box validation)
 # ==========================================
 @app.route('/validate-face', methods=['POST'])
 def validate_face():
@@ -115,14 +116,240 @@ def validate_face():
         return jsonify({"valid": False, "message": "No face detected. Center your face."}), 200
 
 # ==========================================
+# API: LOGIN
+# ==========================================
+@app.route('/login', methods=['POST'])
+def login_user():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    
+    # Use dictionary=True so we can access data by name (e.g., user['firstName'])
+    cursor = conn.cursor(dictionary=True) 
+
+    try:
+        # 1. Find the user by email
+        sql = "SELECT * FROM User WHERE email = %s"
+        cursor.execute(sql, (email,))
+        user = cursor.fetchone()
+
+        if user:
+            # 2. Check Password using Bcrypt
+            stored_hash = user['password_hash']
+            if isinstance(stored_hash, str):
+                stored_hash = stored_hash.encode('utf-8')
+
+            if bcrypt.checkpw(password.encode('utf-8'), stored_hash):
+                
+                # 3. Clean up the data before sending to Frontend
+                del user['password_hash'] 
+                del user['face_embedding_vgg'] 
+                
+                # Fix Date formats
+                if user.get('birthday'): user['birthday'] = str(user['birthday'])
+                if user.get('date_registered'): user['date_registered'] = str(user['date_registered'])
+                if user.get('last_active'): user['last_active'] = str(user['last_active'])
+
+                print(f"✅ Login Successful for: {user['firstName']}")
+                return jsonify({"message": "Login Successful", "user": user}), 200
+            else:
+                print("❌ Login Failed: Incorrect Password")
+                return jsonify({"error": "Invalid email or password"}), 401
+        else:
+            print("❌ Login Failed: User not found")
+            return jsonify({"error": "User not found"}), 404
+
+    except Exception as e:
+        print(f"❌ Login Error: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==========================================
+# API: GET USER PROFILE (Smart Version)
+# ==========================================
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user_profile(user_id):
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    
+    cursor = conn.cursor(dictionary=True) 
+
+    try:
+        # 1. Fetch EVERYTHING
+        sql = "SELECT * FROM User WHERE user_id = %s"
+        cursor.execute(sql, (user_id,))
+        user = cursor.fetchone()
+
+        if user:
+            # 2. AUTOMATIC CLEANUP LOOP
+            for key, value in user.items():
+                # A. Fix JSON Columns
+                if key in ['handled_sections', 'enrolled_courses', 'emergency_contact', 'preferences']:
+                    if value and isinstance(value, str):
+                        try:
+                            user[key] = json.loads(value)
+                        except:
+                            user[key] = [] 
+                    elif value is None:
+                        user[key] = []
+
+                # B. Fix Dates
+                if hasattr(value, 'isoformat'): 
+                    user[key] = value.isoformat()
+            
+            # 3. DELETE SENSITIVE/HEAVY DATA
+            user.pop('password_hash', None)
+            user.pop('face_embedding_vgg', None)
+
+            return jsonify(user), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+
+    except Exception as e:
+        print(f"❌ Error fetching profile: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==========================================
+# API: UPDATE PROFILE
+# ==========================================
+@app.route('/user/update/<int:user_id>', methods=['PUT'])
+def update_user_profile(user_id):
+    data = request.json
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor()
+
+    try:
+        # 1. Prepare JSON fields
+        emergency_contact = json.dumps(data.get('emergency_contact', {}))
+        
+        # 2. Update Query
+        sql = """
+            UPDATE User SET 
+                firstName = %s,
+                lastName = %s,
+                contactNumber = %s,
+                birthday = %s,
+                homeAddress = %s,
+                street_number = %s,
+                street_name = %s,
+                barangay = %s,
+                city = %s,
+                zip_code = %s,
+                emergency_contact = %s
+            WHERE user_id = %s
+        """
+        
+        # 3. Map values
+        vals = (
+            data.get('firstName'),
+            data.get('lastName'),
+            data.get('contactNumber'),
+            data.get('birthday'), 
+            data.get('homeAddress'),
+            data.get('street_number'),
+            data.get('street_name'),
+            data.get('barangay'),
+            data.get('city'),
+            data.get('zip_code'),
+            emergency_contact,
+            user_id
+        )
+
+        cursor.execute(sql, vals)
+        conn.commit()
+
+        print(f"✅ User {user_id} Updated Successfully")
+        return jsonify({"message": "Profile updated successfully!"}), 200
+
+    except Exception as e:
+        print(f"❌ Update Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==========================================
+# API: VERIFY PASSWORD (Step 1 of Change Password)
+# ==========================================
+@app.route('/user/verify-password', methods=['POST'])
+def verify_password():
+    data = request.json
+    user_id = data.get('user_id')
+    password_input = data.get('password')
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("SELECT password_hash FROM User WHERE user_id = %s", (user_id,))
+        user = cursor.fetchone()
+
+        if user:
+            stored_hash = user['password_hash']
+            if isinstance(stored_hash, str):
+                stored_hash = stored_hash.encode('utf-8')
+            
+            if bcrypt.checkpw(password_input.encode('utf-8'), stored_hash):
+                return jsonify({"valid": True}), 200
+            else:
+                return jsonify({"valid": False, "error": "Incorrect password"}), 401
+        return jsonify({"error": "User not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==========================================
+# API: CHANGE PASSWORD (Step 2)
+# ==========================================
+@app.route('/user/change-password', methods=['PUT'])
+def change_password():
+    data = request.json
+    user_id = data.get('user_id')
+    new_password = data.get('new_password')
+
+    if not new_password:
+        return jsonify({"error": "Password is required"}), 400
+
+    # Hash the NEW password
+    hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "UPDATE User SET password_hash = %s WHERE user_id = %s", 
+            (hashed_pw, user_id)
+        )
+        conn.commit()
+        return jsonify({"message": "Password updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==========================================
 # API: REGISTER
 # ==========================================
-@app.route('/register', methods=['POST']) # Make sure walang /api prefix kung ganun sa frontend
+@app.route('/register', methods=['POST']) 
 def register_user():
     data = request.json
     print(f"\n📩 Registering: {data.get('firstName')} {data.get('lastName')}")
     
-    # Check if faceCapture exists in payload
     if not data.get('faceCapture'):
         print("⚠️ Warning: Payload missing 'faceCapture'")
 
@@ -135,20 +362,13 @@ def register_user():
         email = data.get('email')
         password = data.get('password')
         
-        # TUPM ID
         tupm_id = f"TUPM-{data.get('tupmYear')}-{data.get('tupmSerial')}"
-        
-        # Hashing
         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-        # Face Process
         face_blob, face_status = process_face_embedding(data.get('faceCapture'))
 
-        # JSON Lists
         handled_sections = json.dumps(data.get('handledSections', []))
         enrolled_courses = json.dumps(data.get('selectedCourses', []))
         
-        # Address
         full_addr = f"{data.get('streetNumber')} {data.get('streetName')}, {data.get('barangay')}, {data.get('city')}, {data.get('zipCode')}"
 
         sql = """

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import './FacultyLayout.css';
 import '../ZCommon/Utility.css'; // Global utility styles
-import LoggedInHeader from '../ZCommon/LoggedInHeader';
+import Header from '../ZCommon/Header';
 
 // --- FALLBACK ONLY (Gagamitin lang kapag walang picture sa Database) ---
 const DEFAULT_AVATAR = 'https://placehold.co/100x100/f8d7da/dc3545?text=No+Img';
@@ -105,7 +105,7 @@ const FacultyLayout = () => {
     return (
         <div className="dashboard-container">
             {/* Pass the DYNAMIC user object (with DB image) to the Header */}
-            <LoggedInHeader theme={facultyTheme} user={user} />
+            <Header theme={facultyTheme} user={user} />
             
             <div className="dashboard-body">
                 <FacultySidebar />

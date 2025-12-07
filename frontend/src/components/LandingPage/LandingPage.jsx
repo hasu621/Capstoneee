@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // <--- WAG KALIMUTAN ITO SA TAAS!
-import { Link } from 'react-router-dom';
+import axios from 'axios'; 
 import './LandingPage.css';
-import heroImageUrl from '../../assets/images/TUP_Background.jpg'; // Make sure tama path mo dito
+import heroImageUrl from '../../assets/images/TUP_Background.jpg';
+import Header from '../ZCommon/Header'; 
+import Footer from '../ZCommon/Footer';   
 
 // LandingPage.jsx
 
@@ -14,11 +15,14 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
     // States for inputs
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [errorMessage, setErrorMessage] = useState(''); // Para sa notification if mali
+    const [errorMessage, setErrorMessage] = useState('');
+    
+    // Password Visibility State
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async () => {
         try {
-            setErrorMessage(''); // Clear previous errors
+            setErrorMessage(''); 
 
             const response = await axios.post('http://localhost:5000/login', {
                 email: email,
@@ -26,19 +30,15 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
             });
 
             if (response.data.message === "Login Successful") {
-                // 1. Save user data to Local Storage (Para maretrieve sa FacultyLayout)
                 localStorage.setItem('currentUser', JSON.stringify(response.data.user));
 
-                // 2. Check role and Redirect
                 const userRole = response.data.user.role;
-                
                 alert(`Welcome back, ${response.data.user.firstName}!`);
 
                 if (userRole === 'faculty') {
                     navigate('/faculty-dashboard');
                 } else if (userRole === 'student') {
-                    // navigate('/student-dashboard'); // Next time natin gawin to
-                    alert("Student Dashboard coming soon!");
+                    navigate('/student-dashboard');
                 } else {
                     navigate('/admin-dashboard');
                 }
@@ -46,7 +46,6 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
 
         } catch (error) {
             console.error("Login Error:", error);
-            // Dito lalabas yung error message galing sa database (User not found / Incorrect password)
             setErrorMessage(error.response?.data?.error || "Something went wrong. Try again.");
         }
     };
@@ -64,7 +63,6 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
                     <div className="auth-form-container">
                         <h2 className="auth-form-title">Welcome <span className="auth-title-highlight">Back!</span></h2>
                         
-                        {/* ERROR NOTIFICATION */}
                         {errorMessage && (
                             <div style={{ color: 'red', marginBottom: '10px', textAlign: 'center', background: '#ffe6e6', padding: '5px', borderRadius: '5px' }}>
                                 <i className="fas fa-exclamation-circle"></i> {errorMessage}
@@ -81,17 +79,23 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
+
+                        {/* PASSWORD FIELD SECTION */}
                         <div className="auth-form-group">
                             <label className="auth-form-label">Password</label>
                             <div className="auth-password-wrapper">
                                 <input 
                                     className="auth-form-input" 
-                                    type="password" 
+                                    type={showPassword ? "text" : "password"} 
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
-                                <i className="auth-password-icon fas fa-eye"></i>
+                                <i 
+                                    className={`auth-password-icon fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{ cursor: 'pointer' }}
+                                ></i>
                             </div>
                         </div>
                         
@@ -102,7 +106,6 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
                             <a href="#" className="auth-forgot-link">Forgot Password?</a>
                         </div>
 
-                        {/* CHANGE BUTTON TO CALL HANDLELOGIN */}
                         <button className="auth-submit-button" onClick={handleLogin}>Log In</button>
                         
                         <p className="auth-switch-prompt">
@@ -116,13 +119,12 @@ const LoginPanel = ({ isOpen, onClose, onSwitchToSignup }) => {
 };
 
 // ==========================================
-// 2. ROLE SELECTION MODAL (The Overlay)
+// 2. ROLE SELECTION MODAL (Keep this for "Get Started/Sign Up")
 // ==========================================
 const RoleSelectionModal = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
 
     const handleSelect = (role) => {
-        // Dito na papasok yung separate Registration Page na ginawa natin kanina
         navigate(`/register/${role}`); 
     };
 
@@ -130,7 +132,6 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
 
     return (
         <div className="auth-slider-overlay signup-overlay visible" onClick={onClose}>
-             {/* stopPropagation prevents closing when clicking INSIDE the box */}
             <div className="signup-panel" onClick={(e) => e.stopPropagation()}>
                 <h2 className="auth-form-title">Select Your Role</h2>
                 <p className="role-selection-subtitle">Please choose your role to continue registration</p>
@@ -155,7 +156,7 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
 };
 
 // ==========================================
-// 3. HERO SECTION (RESTORED BUTTONS!)
+// 3. HERO SECTION (UPDATED: Access Portal now opens Login)
 // ==========================================
 const HeroSection = ({ setPanel }) => ( 
   <section className="hero-section" style={{ backgroundImage: `url(${heroImageUrl})` }}>
@@ -166,39 +167,24 @@ const HeroSection = ({ setPanel }) => (
           Revolutionary campus security powered by Raspberry Pi, featuring facial recognition, gesture control, and Real-time monitoring for a safer, smarter educational environment.
         </p>
         
-        {/* --- DITO KO BINALIK YUNG BUTTONS MO --- */}
         <div className="cta-buttons">
-          {/* Access Portal: Opens the Role Selection Modal */}
-           <Link to="/select-role" className="cta-primary">
+          {/* UPDATED: Changed from Link to Button calling setPanel('login') */}
+           <button onClick={() => setPanel('login')} className="cta-primary">
             <i className="fas fa-lock"></i> Access Portal
-          </Link>
+          </button>
           
-          {/* Watch Demo: Restored Visual Only */}
           <button className="cta-secondary">
             <i className="fas fa-play-circle"></i> Watch Demo
           </button>
         </div>
-        {/* ---------------------------------------- */}
+
       </div>
     </div>
   </section>
 );
 
 // ==========================================
-// 4. HEADER COMPONENT
-// ==========================================
-const Header = ({ setPanel }) => (
-  <header className="header">
-    <div className="logo"><span>FRAMES</span></div>
-    <nav className="nav-links">
-      <button onClick={() => setPanel('login')} className="login-link">Login</button>
-      <button onClick={() => setPanel('signup')} className="get-started-button">Get Started</button>
-    </nav>
-  </header>
-);
-
-// ==========================================
-// 5. FEATURES SECTION
+// 4. FEATURES SECTION
 // ==========================================
 const FeatureCard = ({ iconClass, title, description }) => (
     <div className="feature-card">
@@ -248,26 +234,30 @@ const LandingPage = () => {
   const [panel, setPanel] = useState(null); // 'login' or 'signup'
 
   return (
-    <div className="landing-page">
-      <Header setPanel={setPanel} />
-      <main>
-        {/* Passed setPanel to HeroSection so buttons work */}
-        <HeroSection setPanel={setPanel} />
-        <FeaturesSection />
-      </main>
+    <>
+      <div className="landing-page">
+        <Header setPanel={setPanel} />
+        <main>
+          {/* Passed setPanel to HeroSection so buttons work */}
+          <HeroSection setPanel={setPanel} />
+          <FeaturesSection />
+        </main>
 
-      {/* MODALS */}
-      <LoginPanel 
-        isOpen={panel === 'login'} 
-        onClose={() => setPanel(null)} 
-        onSwitchToSignup={() => setPanel('signup')}
-      />
+        {/* MODALS */}
+        <LoginPanel 
+          isOpen={panel === 'login'} 
+          onClose={() => setPanel(null)} 
+          onSwitchToSignup={() => setPanel('signup')}
+        />
 
-      <RoleSelectionModal 
-        isOpen={panel === 'signup'} 
-        onClose={() => setPanel(null)}
-      />
-    </div>
+        {/* Kept this for 'Get Started' button so new users can choose their role */}
+        <RoleSelectionModal 
+          isOpen={panel === 'signup'} 
+          onClose={() => setPanel(null)}
+        />
+      </div>
+      <Footer />
+    </>
   );
 };
 

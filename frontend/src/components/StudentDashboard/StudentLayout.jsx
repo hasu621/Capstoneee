@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom'; // Import NavLink and Outlet
 import './StudentLayout.css'; // New CSS file for the layout
 import '../ZCommon/Utility.css'; // Global utility styles
-import LoggedInHeader from '../ZCommon/LoggedInHeader';
+import Header from '../ZCommon/Header';
 
 // --- PLACEHOLDERS (UPDATE THESE PATHS) ---
 const STUDENT_AVATAR = 'https://placehold.co/100x100/f8d7da/dc3545?text=S';
@@ -73,7 +73,7 @@ const StudentSidebar = () => {
 const StudentLayout = () => {
     return (
         <div className="dashboard-container">
-            <LoggedInHeader theme={studentTheme} user={studentUser} />
+            <Header theme={studentTheme} user={studentUser} />
             <div className="dashboard-body">
                 <StudentSidebar />
                 <div className="main-content-area">

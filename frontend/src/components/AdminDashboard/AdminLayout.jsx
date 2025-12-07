@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import './AdminLayout.css'; // Use the layout CSS file
 import '../ZCommon/Utility.css';
-import LoggedInHeader from '../ZCommon/LoggedInHeader'; 
+import Header from '../ZCommon/Header'; 
 
 // --- THEME & USER DEFINITION (RED THEME) ---
 const adminTheme = {
@@ -63,7 +63,7 @@ const AdminSidebar = () => {
 const AdminLayout = () => {
     return (
         <div className="dashboard-container">
-            <LoggedInHeader theme={adminTheme} user={adminUser} />
+            <Header theme={adminTheme} user={adminUser} />
             <div className="dashboard-body">
                 <AdminSidebar />
                 <div className="main-content-area">

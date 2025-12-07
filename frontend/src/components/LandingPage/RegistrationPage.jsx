@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './LandingPage.css'; 
-import './Registration.css'; 
+import './RegistrationPage.css'; 
+import Header from '../ZCommon/Header';
+import Footer from '../ZCommon/Footer';
 
 // --- HELPER DATA FOR BIRTHDAY ---
 const months = [
@@ -230,15 +232,7 @@ const [formData, setFormData] = useState({
   return (
     <div className="registration-page-wrapper">
         
-        {/* --- HEADER --- */}
-        <header className="reg-header">
-            <div className="logo" onClick={() => navigate('/')}>
-                <span>FRAMES</span>
-            </div>
-            <a href="#" className="header-right-link" onClick={(e) => e.preventDefault()}>
-                <i className="fas fa-question-circle"></i> Need Help?
-            </a>
-        </header>
+      <Header user={null} setPanel={() => navigate('/')} />
 
         <div className="registration-container">
             <div className="form-card">
@@ -576,25 +570,7 @@ const [formData, setFormData] = useState({
 
             </div>
         </div>
-
-        {/* --- FOOTER --- */}
-        <footer className="reg-footer">
-            <div className="footer-content">
-                <div className="footer-left">
-                    <strong>Technological University of the Philippines</strong>
-                    <span>Ayala Blvd, Ermita, Manila</span>
-                    <span>1000 Metro Manila</span>
-                </div>
-                <div className="footer-right">
-                    <strong>Contact Us</strong>
-                    <span><i className="fas fa-phone-alt"></i> (02) 8524 4611</span>
-                    <span><i className="fas fa-envelope"></i> helpdesk@tup.edu.ph</span>
-                </div>
-            </div>
-            <div className="footer-copyright">
-                © 2024 FRAMES Security System. All Rights Reserved.
-            </div>
-        </footer>
+        <Footer />
     </div>
   );
 };

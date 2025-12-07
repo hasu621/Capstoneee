@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './SettingsPage.css'; // New CSS file for this page
 import '../ZCommon/Utility.css';
-import LoggedInHeader from './LoggedInHeader';
+import Header from '../ZCommon/Header';
 import Footer from './Footer'; // <-- 1. IMPORT FOOTER
 
 // --- Mock Theme & User for Header ---
@@ -42,7 +42,7 @@ const SettingsPage = () => {
 
     return (
         <>
-            <LoggedInHeader theme={redTheme} user={mockUser} />
+            <Header theme={redTheme} user={mockUser} />
             <div className="settings-page-container">
                 {/* Top Header Bar */}
                 <div className="settings-header-bar">
