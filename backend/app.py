@@ -425,5 +425,135 @@ def register_user():
         cursor.close()
         conn.close()
 
+# ==========================================
+# STUDENT MODULE APIs
+# ==========================================
+
+# 1. Get Dashboard Stats & Notifications
+@app.route('/api/student/dashboard/<int:user_id>', methods=['GET'])
+def get_student_dashboard(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # A. Attendance Rate (Total IN logs / Total Expected - Simplified calculation)
+        cursor.execute("SELECT COUNT(*) as count FROM EventLog WHERE user_id = %s AND event_type = 'attendance_in'", (user_id,))
+        total_attendance = cursor.fetchone()['count']
+        
+        # B. Enrolled Courses (Get JSON)
+        cursor.execute("SELECT enrolled_courses FROM User WHERE user_id = %s", (user_id,))
+        courses_json = cursor.fetchone()['enrolled_courses']
+        # Handle if None or String
+        course_count = 0
+        if courses_json:
+            if isinstance(courses_json, str):
+                courses_json = json.loads(courses_json)
+            course_count = len(courses_json)
+
+        # C. Notifications
+        cursor.execute("SELECT * FROM Notification WHERE user_id = %s ORDER BY created_at DESC LIMIT 5", (user_id,))
+        notifications = cursor.fetchall()
+        
+        # D. Recent Attendance
+        cursor.execute("""
+            SELECT e.timestamp, c.course_name, cm.room_name 
+            FROM EventLog e 
+            LEFT JOIN CameraManagement cm ON e.camera_id = cm.camera_id
+            -- NOTE: Simplified join. In reality, join with ClassSchedule based on time.
+            LEFT JOIN ClassSchedule c ON c.camera_id = e.camera_id 
+            WHERE e.user_id = %s AND e.event_type = 'attendance_in'
+            ORDER BY e.timestamp DESC LIMIT 3
+        """, (user_id,))
+        recent_logs = cursor.fetchall()
+
+        return jsonify({
+            "attendance_rate": f"{min(total_attendance * 10, 100)}%", # Dummy calc: 10% per login
+            "enrolled_courses": course_count,
+            "notifications": notifications,
+            "recent_attendance": recent_logs
+        })
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# 2. Get Student Schedule (FILTERED BY ENROLLED COURSES)
+@app.route('/api/student/schedule/<int:user_id>', methods=['GET'])
+def get_student_schedule(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # 1. Get Student Section AND Enrolled Courses
+        cursor.execute("SELECT section, enrolled_courses FROM User WHERE user_id = %s", (user_id,))
+        result = cursor.fetchone()
+        
+        if not result or not result['section']:
+            return jsonify([]) # No section, no schedule
+
+        section = result['section']
+        enrolled_json = result['enrolled_courses']
+        
+        # Parse enrolled courses (handle string or list)
+        enrolled_list = []
+        if enrolled_json:
+            if isinstance(enrolled_json, str):
+                enrolled_list = json.loads(enrolled_json)
+            else:
+                enrolled_list = enrolled_json
+        
+        # 2. Get Schedule for Section BUT Filter by Course Code
+        # Gumamit tayo ng dynamic SQL generation para sa IN clause
+        if not enrolled_list:
+             return jsonify([]) # Enrolled in nothing
+
+        format_strings = ','.join(['%s'] * len(enrolled_list))
+        
+        sql = f"""
+            SELECT cs.day_of_week, cs.start_time, cs.end_time, cs.course_name, cm.room_name, cs.course_code
+            FROM ClassSchedule cs
+            LEFT JOIN CameraManagement cm ON cs.camera_id = cm.camera_id
+            WHERE cs.section = %s 
+            AND cs.course_code IN ({format_strings}) -- FILTER HERE
+            ORDER BY cs.start_time
+        """
+        
+        # Combine section + enrolled list for parameters
+        params = [section] + enrolled_list
+        
+        cursor.execute(sql, tuple(params))
+        schedule = cursor.fetchall()
+        
+        return jsonify(schedule)
+
+    except Exception as e:
+        print(f"Schedule Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# 3. Get Attendance History
+@app.route('/api/student/history/<int:user_id>', methods=['GET'])
+def get_attendance_history(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        sql = """
+            SELECT e.timestamp, e.event_type, e.confidence_score, cm.room_name
+            FROM EventLog e
+            LEFT JOIN CameraManagement cm ON e.camera_id = cm.camera_id
+            WHERE e.user_id = %s
+            ORDER BY e.timestamp DESC
+        """
+        cursor.execute(sql, (user_id,))
+        logs = cursor.fetchall()
+        return jsonify(logs)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
