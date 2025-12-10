@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import './FacultyLayout.css'; 
 import '../ZCommon/Utility.css'; 
-import LoggedInHeader from '../ZCommon/Header'; // <-- TAMA
+import LoggedInHeader from '../ZCommon/Header'; 
 
 const DEFAULT_AVATAR = 'https://placehold.co/100x100/f8d7da/dc3545?text=No+Img';
 
@@ -16,9 +16,10 @@ const facultyTheme = {
 const FacultySidebar = ({ user }) => {
     // --- LOGIC: Check if user is a Department Head ---
     // Tinitingnan nito kung ang faculty_status sa database ay "Head" o "Department Head"
-    const isDeptHead = user.faculty_status === 'Head' || user.faculty_status === 'Department Head';
+    // Gumamit ng safety check (user?.faculty_status) para hindi mag-crash kung undefined
+    const isDeptHead = user?.faculty_status === 'Head' || user?.faculty_status === 'Department Head';
 
-    // Base Navigation Items (Lahat ng Faculty meron nito)
+    // Base Navigation Items
     const navItems = [
         { name: 'Dashboard', icon: 'fas fa-th-large', to: '/faculty-dashboard' },
         { name: 'My Classes', icon: 'fas fa-book-reader', to: '/faculty-classes' },
@@ -55,8 +56,6 @@ const FacultySidebar = ({ user }) => {
                 </ul>
             </nav>
 
-            {/* Tinanggal na natin ang Demo Checkbox dito */}
-
             <div className="sidebar-footer">
                 SmartCampus v2.1.0
             </div>
@@ -66,11 +65,12 @@ const FacultySidebar = ({ user }) => {
 
 const FacultyLayout = () => {
     const navigate = useNavigate();
-    // Initialize user state. Include 'faculty_status' default.
+    // Initialize user state
     const [user, setUser] = useState({ 
         name: 'Loading...', 
         avatar: DEFAULT_AVATAR,
-        faculty_status: 'Regular' // Default to Regular
+        faculty_status: 'Regular', // Default to Regular
+        notifications: 0
     });
 
     useEffect(() => {
@@ -78,7 +78,7 @@ const FacultyLayout = () => {
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
             
-            // Safety Check: Faculty lang ang pwede dito
+            // Safety Check: Faculty lang ang pwede dito (Case Insensitive Fix)
             if (parsedUser.role && parsedUser.role.toLowerCase() !== 'faculty') {
                 navigate('/'); 
                 return;
@@ -86,7 +86,7 @@ const FacultyLayout = () => {
 
             // Set User Data including the specific faculty_status form DB
             setUser({
-                ...parsedUser, // Kunin lahat ng info galing DB (firstName, lastName, faculty_status, etc.)
+                ...parsedUser, 
                 name: `${parsedUser.firstName} ${parsedUser.lastName}`,
                 avatar: parsedUser.avatar || DEFAULT_AVATAR,
                 faculty_status: parsedUser.faculty_status || 'Regular' 
