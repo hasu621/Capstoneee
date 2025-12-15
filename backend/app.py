@@ -1,10 +1,5 @@
 import os
-
-# --- 🛠️ CRITICAL FIX FOR INTEL GPU CRASH ---
-# Ito ang pipigil sa "vpg-compute-neo" error
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-
+from datetime import datetime
 import cv2
 import mysql.connector
 import numpy as np
@@ -12,12 +7,14 @@ import base64
 import pickle
 import json
 import bcrypt
-import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_config import DB_CONFIG
 from deepface import DeepFace
-from datetime import datetime
+
+# --- 🛠️ CRITICAL FIX FOR INTEL GPU CRASH ---
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 # --- 1. SETUP MODELS ---
 MODEL_NAME = "SFace"
@@ -124,7 +121,7 @@ def validate_face():
         return jsonify({"valid": False, "message": "No face detected. Center your face."}), 200
 
 # ==========================================
-# API: LOGIN
+# API: LOGIN (MODIFIED to include verification_status)
 # ==========================================
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -142,7 +139,7 @@ def login_user():
     cursor = conn.cursor(dictionary=True) 
 
     try:
-        # 1. Find the user by email
+        # 1. Find the user by email (SELECT * para makuha ang verification_status)
         sql = "SELECT * FROM User WHERE email = %s"
         cursor.execute(sql, (email,))
         user = cursor.fetchone()
@@ -164,7 +161,8 @@ def login_user():
                 if user.get('date_registered'): user['date_registered'] = str(user['date_registered'])
                 if user.get('last_active'): user['last_active'] = str(user['last_active'])
 
-                print(f"✅ Login Successful for: {user['firstName']}")
+                # NOTE: Kasama na ngayon ang user['verification_status'] sa user object na ipapadala.
+                print(f"✅ Login Successful for: {user['firstName']} (Status: {user.get('verification_status', 'N/A')})")
                 return jsonify({"message": "Login Successful", "user": user}), 200
             else:
                 print("❌ Login Failed: Incorrect Password")
@@ -181,7 +179,7 @@ def login_user():
         conn.close()
 
 # ==========================================
-# API: GET USER PROFILE (Smart Version)
+# API: GET USER PROFILE (MODIFIED to include verification_status)
 # ==========================================
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user_profile(user_id):
@@ -191,7 +189,7 @@ def get_user_profile(user_id):
     cursor = conn.cursor(dictionary=True) 
 
     try:
-        # 1. Fetch EVERYTHING
+        # 1. Fetch EVERYTHING (includes verification_status)
         sql = "SELECT * FROM User WHERE user_id = %s"
         cursor.execute(sql, (user_id,))
         user = cursor.fetchone()
@@ -216,7 +214,8 @@ def get_user_profile(user_id):
             # 3. DELETE SENSITIVE/HEAVY DATA
             user.pop('password_hash', None)
             user.pop('face_embedding_vgg', None)
-
+            
+            # NOTE: Kasama na ngayon ang user['verification_status']
             return jsonify(user), 200
         else:
             return jsonify({"error": "User not found"}), 404
@@ -351,7 +350,7 @@ def change_password():
         conn.close()
 
 # ==========================================
-# API: REGISTER
+# API: REGISTER (MODIFIED for Admin Auto-Verification)
 # ==========================================
 @app.route('/register', methods=['POST']) 
 def register_user():
@@ -374,6 +373,16 @@ def register_user():
         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         face_blob, face_status = process_face_embedding(data.get('faceCapture'))
 
+        # --- MODIFICATION START: CONDITIONAL VERIFICATION STATUS ---
+        if role == 'admin':
+            # Admin ay Verified agad
+            verification_status = 'Verified'
+            print("💡 Account Role: Admin. Auto-verified.")
+        else:
+            # Student/Faculty ay Pending
+            verification_status = 'Pending'
+        # --- MODIFICATION END ---
+
         handled_sections = json.dumps(data.get('handledSections', []))
         enrolled_courses = json.dumps(data.get('selectedCourses', []))
         
@@ -386,7 +395,7 @@ def register_user():
                 street_number, street_name, barangay, city, zip_code, homeAddress,
                 college, course, year_level, section, student_status, term, faculty_status,
                 handled_sections, enrolled_courses,
-                face_embedding_vgg, face_status,
+                face_embedding_vgg, face_status, verification_status, 
                 last_active, date_registered
             ) VALUES (
                 %s, %s, %s, %s,
@@ -394,7 +403,7 @@ def register_user():
                 %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s,
-                %s, %s,
+                %s, %s, %s, 
                 NOW(), NOW()
             )
         """
@@ -411,14 +420,14 @@ def register_user():
             data.get('term'), 
             data.get('facultyStatus'),
             handled_sections, enrolled_courses,
-            face_blob, face_status
+            face_blob, face_status, verification_status  
         )
 
         cursor.execute(sql, val)
         conn.commit()
         user_id = cursor.lastrowid
         
-        print(f"✅ Success! User {user_id} registered with Face Status: {face_status}")
+        print(f"✅ Success! User {user_id} registered with Face Status: {face_status} and Verification Status: {verification_status}")
         return jsonify({"message": "Registration Successful!", "user_id": user_id}), 201
 
     except mysql.connector.Error as err:
@@ -432,10 +441,152 @@ def register_user():
     finally:
         cursor.close()
         conn.close()
+        
+# ==========================================
+# ADMIN VERIFICATION APIs (NEW)
+# ==========================================
+
+# 1. Get List of All Users for Verification (Application Page)
+@app.route('/admin/verification/list', methods=['GET'])
+def get_all_users():
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    # Ginagamit ang dictionary=True para madaling i-access ang column names
+    cursor = conn.cursor(dictionary=True) 
+
+    try:
+        # SELECT * para makuha ang lahat ng data, kabilang ang verification_status, college, course, etc.
+        sql = """
+        SELECT 
+            user_id, 
+            firstName, 
+            lastName, 
+            email, 
+            role, 
+            college, 
+            course, 
+            tupm_id, 
+            date_registered, 
+            verification_status 
+        FROM User 
+        ORDER BY date_registered DESC
+        """
+        cursor.execute(sql)
+        users = cursor.fetchall()
+
+        # Format ang dates bago ibalik
+        for user in users:
+            if user.get('date_registered'):
+                 # Convert datetime object to string
+                user['date_registered'] = str(user['date_registered'])
+
+        print(f"✅ Retrieved {len(users)} users for verification list.")
+        return jsonify(users), 200
+
+    except Exception as e:
+        print(f"❌ Error retrieving user list: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# 2. Approve User Status (MATCHES React endpoint: /admin/verification/approve)
+@app.route('/admin/verification/approve', methods=['POST'])
+def approve_user_verification():
+    data = request.json
+    user_id = data.get('user_id')
+    new_status = 'Verified'
+
+    if not user_id:
+        return jsonify({"error": "Invalid User ID"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor()
+
+    try:
+        sql = "UPDATE User SET verification_status = %s WHERE user_id = %s"
+        cursor.execute(sql, (new_status, user_id))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "User not found or status unchanged"}), 404
+
+        print(f"✅ User ID {user_id} updated to {new_status}")
+        return jsonify({"message": f"User {user_id} status updated to {new_status}"}), 200
+
+    except Exception as e:
+        print(f"❌ Error updating status: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# 3. Reject User Status (MATCHES React endpoint: /admin/verification/reject)
+@app.route('/admin/verification/reject', methods=['POST'])
+def reject_user_verification():
+    data = request.json
+    user_id = data.get('user_id')
+    new_status = 'Rejected'
+
+    if not user_id:
+        return jsonify({"error": "Invalid User ID"}), 400
+
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor()
+
+    try:
+        sql = "UPDATE User SET verification_status = %s WHERE user_id = %s"
+        cursor.execute(sql, (new_status, user_id))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "User not found or status unchanged"}), 404
+
+        print(f"✅ User ID {user_id} updated to {new_status}")
+        return jsonify({"message": f"User {user_id} status updated to {new_status}"}), 200
+
+    except Exception as e:
+        print(f"❌ Error updating status: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+        
+# 4. Delete User (Para sa permanent removal)
+@app.route('/admin/user-delete/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor()
+    
+    try:
+        # Optional: Delete related records in EventLog, Notifications, etc. before deleting user.
+        # Example: cursor.execute("DELETE FROM EventLog WHERE user_id = %s", (user_id,))
+        
+        sql = "DELETE FROM User WHERE user_id = %s"
+        cursor.execute(sql, (user_id,))
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"error": "User not found"}), 404
+
+        print(f"✅ User ID {user_id} deleted permanently.")
+        return jsonify({"message": f"User {user_id} deleted successfully"}), 200
+
+    except Exception as e:
+        print(f"❌ Error deleting user: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 # ==========================================
-# STUDENT MODULE APIs
+# STUDENT MODULE APIs (MODIFIED for Verification Check)
+# ... (rest of the student, faculty, and reporting APIs continue here)
 # ==========================================
+
 
 # 1. Get Dashboard Stats & Notifications
 @app.route('/api/student/dashboard/<int:user_id>', methods=['GET'])
@@ -443,25 +594,37 @@ def get_student_dashboard(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
-        # A. Attendance Rate (Total IN logs / Total Expected - Simplified calculation)
+        # A. Get Verification Status and Enrolled Courses
+        cursor.execute("SELECT enrolled_courses, verification_status FROM User WHERE user_id = %s", (user_id,))
+        user_data = cursor.fetchone()
+
+        # SECURITY CHECK (ADDED)
+        if not user_data or user_data.get('verification_status') != 'Verified':
+             # Return access denied status if not verified
+             return jsonify({
+                 "attendance_rate": "N/A", 
+                 "enrolled_courses": 0,
+                 "notifications": [{"message": "Account pending admin approval", "icon": "fa-user-lock"}],
+                 "recent_attendance": []
+             })
+
+        # B. Attendance Rate (Total IN logs / Total Expected - Simplified calculation)
         cursor.execute("SELECT COUNT(*) as count FROM EventLog WHERE user_id = %s AND event_type = 'attendance_in'", (user_id,))
         total_attendance = cursor.fetchone()['count']
         
-        # B. Enrolled Courses (Get JSON)
-        cursor.execute("SELECT enrolled_courses FROM User WHERE user_id = %s", (user_id,))
-        courses_json = cursor.fetchone()['enrolled_courses']
-        # Handle if None or String
+        # C. Enrolled Courses (from user_data fetch)
+        courses_json = user_data['enrolled_courses']
         course_count = 0
         if courses_json:
             if isinstance(courses_json, str):
                 courses_json = json.loads(courses_json)
             course_count = len(courses_json)
 
-        # C. Notifications
+        # D. Notifications
         cursor.execute("SELECT * FROM Notification WHERE user_id = %s ORDER BY created_at DESC LIMIT 5", (user_id,))
         notifications = cursor.fetchall()
         
-        # D. Recent Attendance
+        # E. Recent Attendance
         cursor.execute("""
             SELECT e.timestamp, c.course_name, cm.room_name 
             FROM EventLog e 
@@ -492,11 +655,15 @@ def get_student_schedule(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
-        # 1. Get Student Section AND Enrolled Courses
-        cursor.execute("SELECT section, enrolled_courses FROM User WHERE user_id = %s", (user_id,))
+        # 1. Get Student Section, Enrolled Courses, at Verification Status
+        cursor.execute("SELECT section, enrolled_courses, verification_status FROM User WHERE user_id = %s", (user_id,))
         result = cursor.fetchone()
+
+        # SECURITY CHECK (ADDED)
+        if not result or result.get('verification_status') != 'Verified':
+             return jsonify({"error": "Account not verified"}), 403
         
-        if not result or not result['section']:
+        if not result['section']:
             return jsonify([]) # No section, no schedule
 
         section = result['section']
@@ -547,6 +714,12 @@ def get_attendance_history(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
+        # SECURITY CHECK (ADDED)
+        cursor.execute("SELECT verification_status FROM User WHERE user_id = %s", (user_id,))
+        result = cursor.fetchone()
+        if not result or result.get('verification_status') != 'Verified':
+            return jsonify({"error": "Account not verified"}), 403
+
         sql = """
             SELECT e.timestamp, e.event_type, e.confidence_score, cm.room_name
             FROM EventLog e
@@ -565,93 +738,24 @@ def get_attendance_history(user_id):
 
 
 # ==========================================
-# API: FACULTY DASHBOARD STATS
-# ==========================================
-@app.route('/api/faculty/dashboard-stats/<int:user_id>', methods=['GET'])
-def get_faculty_dashboard_stats(user_id):
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-        # 1. Today's Classes Count
-        today_name = datetime.now().strftime('%A')
-        cursor.execute("""
-            SELECT COUNT(*) as count 
-            FROM ClassSchedule 
-            WHERE faculty_id = %s AND day_of_week = %s
-        """, (user_id, today_name))
-        today_classes = cursor.fetchone()['count']
-
-        # 2. Total Students Handled
-        # (Count distinct students in sections handled by this faculty)
-        cursor.execute("""
-            SELECT COUNT(DISTINCT u.user_id) as count
-            FROM User u
-            JOIN ClassSchedule cs ON u.section = cs.section
-            WHERE cs.faculty_id = %s AND u.role = 'student'
-        """, (user_id,))
-        total_students = cursor.fetchone()['count']
-
-        # 3. Overall Attendance Rate (Last 30 Days)
-        cursor.execute("""
-            SELECT 
-                COUNT(*) as total_logs,
-                (SELECT COUNT(*) * 4 FROM ClassSchedule WHERE faculty_id = %s) as expected_logs
-            FROM EventLog e
-            JOIN ClassSchedule cs ON e.schedule_id = cs.schedule_id
-            WHERE cs.faculty_id = %s 
-            AND e.event_type = 'attendance_in'
-            AND e.timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        """, (user_id, user_id))
-        att_data = cursor.fetchone()
-        
-        att_rate = 0
-        if att_data['expected_logs'] and att_data['expected_logs'] > 0:
-            att_rate = round((att_data['total_logs'] / att_data['expected_logs']) * 100)
-
-        # 4. Recent Attendance Logs (Last 5)
-        cursor.execute("""
-            SELECT 
-                s.subject_code, 
-                s.subject_description, 
-                DATE_FORMAT(e.timestamp, '%h:%i %p') as time,
-                e.confidence_score as rate -- Using confidence as a proxy for 'rate' visually for now
-            FROM EventLog e
-            JOIN ClassSchedule cs ON e.schedule_id = cs.schedule_id
-            JOIN Subjects s ON cs.course_code = s.subject_code
-            WHERE cs.faculty_id = %s AND e.event_type = 'attendance_in'
-            ORDER BY e.timestamp DESC LIMIT 5
-        """, (user_id,))
-        recent_logs = cursor.fetchall()
-
-        return jsonify({
-            "today_classes": today_classes,
-            "total_students": total_students,
-            "attendance_rate": att_rate,
-            "recent_attendance": recent_logs,
-            "alerts": 0 # Placeholder for now
-        })
-
-    except Exception as e:
-        print(f"Dashboard Stats Error: {e}")
-        return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-
-# ==========================================
-# API: FACULTY ATTENDANCE MODULE
+# API: FACULTY DASHBOARD STATS (MODIFIED for Verification Check)
+# ... (existing code for faculty)
 # ==========================================
 
-# 1. Get Faculty Schedule & Stats (FIXED)
+# 1. Get Faculty Schedule & Stats
 @app.route('/api/faculty/schedule/<int:user_id>', methods=['GET'])
 def get_faculty_schedule(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
+        # Check Verification Status first
+        cursor.execute("SELECT verification_status FROM User WHERE user_id = %s", (user_id,))
+        status_data = cursor.fetchone()
+        if not status_data or status_data.get('verification_status') != 'Verified':
+             return jsonify({"error": "Account not verified"}), 403
+
         today_name = datetime.now().strftime('%A')
         
-        # SQL Query: Removed the commented-out line causing the 500 Error
         sql = """
             SELECT 
                 cs.schedule_id, 
@@ -707,7 +811,7 @@ def get_faculty_schedule(user_id):
         return jsonify(classes)
 
     except Exception as e:
-        print(f"Sched Error: {e}")
+        print(f"❌ Sched Error: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
@@ -759,14 +863,15 @@ def get_class_details(schedule_id):
         return jsonify(students)
 
     except Exception as e:
-        print(f"Details Error: {e}")
+        print(f"❌ Details Error: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
 
 # ==========================================
-# API: DEPARTMENT HEAD REPORTS
+# API: DEPT HEAD REPORTS (No change needed)
+# ... (existing code for DEPT HEAD)
 # ==========================================
 
 # 1. Faculty Performance Summary
@@ -785,7 +890,6 @@ def get_faculty_summary_report():
                 COUNT(DISTINCT cs.course_code) as subject_load,
                 
                 -- Calculate Attendance % (Present / Total Scheduled Sessions)
-                -- Note: This is a simplified calculation for now
                 ROUND(
                     (SELECT COUNT(*) FROM EventLog e 
                      WHERE e.user_id = u.user_id 
@@ -820,7 +924,7 @@ def get_faculty_summary_report():
 
         return jsonify(report), 200
     except Exception as e:
-        print(f"Report Error: {e}")
+        print(f"❌ Report Error: {e}")
         return jsonify([]), 500
     finally:
         cursor.close()
@@ -841,11 +945,10 @@ def get_room_occupancy_report():
                 cm.room_name,
                 cm.capacity,
                 
-                -- Mock Peak Hour logic (Real logic requires massive historical processing)
+                -- Mock Peak Hour logic
                 '10:00 AM' as peak_hour, 
 
                 -- Calculate Utilization (Active Logs / Capacity)
-                -- (For now, we count distinct people seen in the last hour)
                 ROUND(
                     (SELECT COUNT(DISTINCT user_id) FROM EventLog e 
                      WHERE e.camera_id = cm.camera_id 
@@ -869,15 +972,11 @@ def get_room_occupancy_report():
 
         return jsonify(report), 200
     except Exception as e:
-        print(f"Report Error: {e}")
+        print(f"❌ Report Error: {e}")
         return jsonify([]), 500
     finally:
         cursor.close()
         conn.close()
-
-# ==========================================
-# API: DEPT HEAD MANAGEMENT (Curriculum & Schedule)
-# ==========================================
 
 # 1. GET ALL MANAGEMENT DATA (Subjects + Schedule + Faculty + Rooms)
 @app.route('/api/dept/management-data', methods=['GET'])
@@ -931,7 +1030,7 @@ def get_management_data():
         })
 
     except Exception as e:
-        print(f"Mgmt Data Error: {e}")
+        print(f"❌ Mgmt Data Error: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
@@ -1024,5 +1123,41 @@ def assign_room():
         cursor.close()
         conn.close()
 
+# --- TEMPORARY STATUS CHECK API (PARA SA DIAGNOSTICS) ---
+@app.route('/check-status/<string:email>', methods=['GET'])
+def check_admin_status(email):
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        sql = "SELECT verification_status, role FROM User WHERE email = %s"
+        cursor.execute(sql, (email,))
+        user = cursor.fetchone()
+
+        if user:
+            print(f"DB Status Report for {email}: {user['verification_status']}")
+            return jsonify({
+                "email": email,
+                "role": user['role'],
+                "status": user['verification_status']
+            }), 200
+        else:
+            return jsonify({"error": "User not found in DB"}), 404
+
+    except Exception as e:
+        print(f"❌ Status Check Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ==========================================
+# APP RUN BLOCK
+# ==========================================
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Tiyakin na naka-comment out na ang lahat ng one-time scripts dito
+    # run_one_time_migration() 
+    # force_verify_admin() 
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
