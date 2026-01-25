@@ -1469,5 +1469,40 @@ def generate_report_data():
         cursor.close()
         conn.close()
 
+# ==========================================
+# API: GET USER REPORT BY EMAIL
+# ==========================================
+@app.route('/report/user', methods=['GET'])
+def get_user_report():
+    email = request.args.get('email')
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        sql = "SELECT * FROM User WHERE email = %s"
+        cursor.execute(sql, (email,))
+        user = cursor.fetchone()
+
+        if user:
+            # Clean up sensitive data
+            user.pop('password_hash', None)
+            user.pop('face_embedding_vgg', None)
+            return jsonify(user), 200
+        else:
+            return jsonify({"error": "User not found"}), 404
+
+    except Exception as e:
+        print(f"❌ Error fetching user report: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
