@@ -1,7 +1,7 @@
 import os
+from datetime import datetime
 
 # --- 🛠️ CRITICAL FIX FOR INTEL GPU CRASH ---
-# Ito ang pipigil sa "vpg-compute-neo" error
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
@@ -16,33 +16,18 @@ import bcrypt
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from db_config import DB_CONFIG
-from deepface import DeepFace  # DeepFace must be imported AFTER setting os.environ
-
-# ... (rest of your code) ...
-
-import cv2
-import mysql.connector
-import numpy as np
-import base64
-import pickle
-import json
-import bcrypt
-import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from db_config import DB_CONFIG
-from deepface import DeepFace
+from deepface import DeepFace 
 
 # --- 1. SETUP MODELS ---
 MODEL_NAME = "SFace"
 DETECTOR_BACKEND = "opencv"
 
-print("⏳ Initializing DeepFace Models...")
+print("Initializing DeepFace Models...")
 try:
     DeepFace.build_model(MODEL_NAME)
-    print("✅ DeepFace models loaded successfully!")
+    print("DeepFace models loaded successfully!")
 except Exception as e:
-    print(f"❌ Warning: Could not load DeepFace models: {e}")
+    print(f"Warning: Could not load DeepFace models: {e}")
 
 app = Flask(__name__)
 # IMPORTANT: Allow ALL routes (r"/*") para gumana ang /validate-face at /register
@@ -54,15 +39,15 @@ def get_db_connection():
         conn = mysql.connector.connect(**DB_CONFIG)
         return conn
     except mysql.connector.Error as err:
-        print(f"❌ DB Error: {err}")
+        print(f"DB Error: {err}")
         return None
 
 # --- FACE PROCESSING ---
 def process_face_embedding(face_capture_data_url):
-    print("\n🔍 Processing Face Embedding...") 
+    print("\nProcessing Face Embedding...") 
 
     if not face_capture_data_url:
-        print("⚠️ No face capture data received.")
+        print("No face capture data received.")
         return None, "Pending"
 
     try:
@@ -77,7 +62,7 @@ def process_face_embedding(face_capture_data_url):
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
         if frame is None: 
-            print("❌ Error: Could not decode image.")
+            print("Error: Could not decode image.")
             return None, "Not Registered"
 
         # Generate Embedding (enforce_detection=False para forgiving)
@@ -92,14 +77,14 @@ def process_face_embedding(face_capture_data_url):
             face_vector = embedding_objs[0]["embedding"]
             # Save as list [vector]
             data_to_save = pickle.dumps([face_vector]) 
-            print("✅ Embedding generated successfully!")
+            print("Embedding generated successfully!")
             return data_to_save, "Registered"
         
-        print("⚠️ DeepFace returned 0 embeddings.")
+        print("DeepFace returned 0 embeddings.")
         return None, "Not Registered"
 
     except Exception as e:
-        print(f"❌ CRITICAL ERROR in process_face_embedding: {e}")
+        print(f"CRITICAL ERROR in process_face_embedding: {e}")
         return None, "Not Registered"
 
 # ==========================================
@@ -138,7 +123,7 @@ def validate_face():
         return jsonify({"valid": False, "message": "No face detected. Center your face."}), 200
 
 # ==========================================
-# API: LOGIN
+# API: LOGIN (MODIFIED to include verification_status)
 # ==========================================
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -152,11 +137,10 @@ def login_user():
     conn = get_db_connection()
     if not conn: return jsonify({"error": "Database connection failed"}), 500
     
-    # Use dictionary=True so we can access data by name (e.g., user['firstName'])
     cursor = conn.cursor(dictionary=True) 
 
     try:
-        # 1. Find the user by email
+        # 1. Find the user by email (SELECT * para makuha ang verification_status)
         sql = "SELECT * FROM User WHERE email = %s"
         cursor.execute(sql, (email,))
         user = cursor.fetchone()
@@ -178,24 +162,25 @@ def login_user():
                 if user.get('date_registered'): user['date_registered'] = str(user['date_registered'])
                 if user.get('last_active'): user['last_active'] = str(user['last_active'])
 
-                print(f"✅ Login Successful for: {user['firstName']}")
+                # NOTE: Kasama na ngayon ang user['verification_status'] sa user object na ipapadala.
+                print(f"Login Successful for: {user['firstName']} (Status: {user.get('verification_status', 'N/A')})")
                 return jsonify({"message": "Login Successful", "user": user}), 200
             else:
-                print("❌ Login Failed: Incorrect Password")
+                print("Login Failed: Incorrect Password")
                 return jsonify({"error": "Invalid email or password"}), 401
         else:
-            print("❌ Login Failed: User not found")
+            print("Login Failed: User not found")
             return jsonify({"error": "User not found"}), 404
 
     except Exception as e:
-        print(f"❌ Login Error: {e}")
+        print(f"Login Error: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
     finally:
         cursor.close()
         conn.close()
 
 # ==========================================
-# API: GET USER PROFILE (Smart Version)
+# API: GET USER PROFILE (MODIFIED to include verification_status)
 # ==========================================
 @app.route('/user/<int:user_id>', methods=['GET'])
 def get_user_profile(user_id):
@@ -205,7 +190,7 @@ def get_user_profile(user_id):
     cursor = conn.cursor(dictionary=True) 
 
     try:
-        # 1. Fetch EVERYTHING
+        # 1. Fetch EVERYTHING (includes verification_status)
         sql = "SELECT * FROM User WHERE user_id = %s"
         cursor.execute(sql, (user_id,))
         user = cursor.fetchone()
@@ -230,20 +215,20 @@ def get_user_profile(user_id):
             # 3. DELETE SENSITIVE/HEAVY DATA
             user.pop('password_hash', None)
             user.pop('face_embedding_vgg', None)
-
+            
             return jsonify(user), 200
         else:
             return jsonify({"error": "User not found"}), 404
 
     except Exception as e:
-        print(f"❌ Error fetching profile: {e}")
+        print(f"Error fetching profile: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
 
 # ==========================================
-# API: UPDATE PROFILE
+# API: UPDATE PROFILE (No change needed)
 # ==========================================
 @app.route('/user/update/<int:user_id>', methods=['PUT'])
 def update_user_profile(user_id):
@@ -292,18 +277,18 @@ def update_user_profile(user_id):
         cursor.execute(sql, vals)
         conn.commit()
 
-        print(f"✅ User {user_id} Updated Successfully")
+        print(f"User {user_id} Updated Successfully")
         return jsonify({"message": "Profile updated successfully!"}), 200
 
     except Exception as e:
-        print(f"❌ Update Error: {e}")
+        print(f"Update Error: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
 
 # ==========================================
-# API: VERIFY PASSWORD (Step 1 of Change Password)
+# API: VERIFY PASSWORD (No change needed)
 # ==========================================
 @app.route('/user/verify-password', methods=['POST'])
 def verify_password():
@@ -335,7 +320,7 @@ def verify_password():
         conn.close()
 
 # ==========================================
-# API: CHANGE PASSWORD (Step 2)
+# API: CHANGE PASSWORD (No change needed)
 # ==========================================
 @app.route('/user/change-password', methods=['PUT'])
 def change_password():
@@ -365,7 +350,7 @@ def change_password():
         conn.close()
 
 # ==========================================
-# API: REGISTER
+# API: REGISTER (MODIFIED for Admin Auto-Verification)
 # ==========================================
 @app.route('/register', methods=['POST']) 
 def register_user():
@@ -373,7 +358,7 @@ def register_user():
     print(f"\n📩 Registering: {data.get('firstName')} {data.get('lastName')}")
     
     if not data.get('faceCapture'):
-        print("⚠️ Warning: Payload missing 'faceCapture'")
+        print("Warning: Payload missing 'faceCapture'")
 
     conn = get_db_connection()
     if not conn: return jsonify({"error": "Database connection failed"}), 500
@@ -388,6 +373,16 @@ def register_user():
         hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         face_blob, face_status = process_face_embedding(data.get('faceCapture'))
 
+        # --- MODIFICATION START: CONDITIONAL VERIFICATION STATUS ---
+        if role == 'admin':
+            # Admin ay Verified agad
+            verification_status = 'Verified'
+            print("Account Role: Admin. Auto-verified.")
+        else:
+            # Student/Faculty ay Pending
+            verification_status = 'Pending'
+        # --- MODIFICATION END ---
+
         handled_sections = json.dumps(data.get('handledSections', []))
         enrolled_courses = json.dumps(data.get('selectedCourses', []))
         
@@ -400,7 +395,7 @@ def register_user():
                 street_number, street_name, barangay, city, zip_code, homeAddress,
                 college, course, year_level, section, student_status, term, faculty_status,
                 handled_sections, enrolled_courses,
-                face_embedding_vgg, face_status,
+                face_embedding_vgg, face_status, verification_status, 
                 last_active, date_registered
             ) VALUES (
                 %s, %s, %s, %s,
@@ -408,7 +403,7 @@ def register_user():
                 %s, %s, %s, %s, %s, %s,
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s,
-                %s, %s,
+                %s, %s, %s, 
                 NOW(), NOW()
             )
         """
@@ -425,30 +420,30 @@ def register_user():
             data.get('term'), 
             data.get('facultyStatus'),
             handled_sections, enrolled_courses,
-            face_blob, face_status
+            face_blob, face_status, verification_status  
         )
 
         cursor.execute(sql, val)
         conn.commit()
         user_id = cursor.lastrowid
         
-        print(f"✅ Success! User {user_id} registered with Face Status: {face_status}")
+        print(f"Success! User {user_id} registered with Face Status: {face_status} and Verification Status: {verification_status}")
         return jsonify({"message": "Registration Successful!", "user_id": user_id}), 201
 
     except mysql.connector.Error as err:
         if err.errno == 1062:
             return jsonify({"error": "Email or TUPM ID already exists."}), 409
-        print(f"❌ SQL Error: {err}")
+        print(f"SQL Error: {err}")
         return jsonify({"error": str(err)}), 500
     except Exception as e:
-        print(f"❌ General Error: {e}")
+        print(f"General Error: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
-
+        
 # ==========================================
-# STUDENT MODULE APIs
+# STUDENT MODULE APIs (MODIFIED for Verification Check)
 # ==========================================
 
 # 1. Get Dashboard Stats & Notifications
@@ -457,25 +452,37 @@ def get_student_dashboard(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
-        # A. Attendance Rate (Total IN logs / Total Expected - Simplified calculation)
+        # A. Get Verification Status and Enrolled Courses
+        cursor.execute("SELECT enrolled_courses, verification_status FROM User WHERE user_id = %s", (user_id,))
+        user_data = cursor.fetchone()
+
+        # SECURITY CHECK (ADDED)
+        if not user_data or user_data.get('verification_status') != 'Verified':
+             # Return access denied status if not verified
+             return jsonify({
+                 "attendance_rate": "N/A", 
+                 "enrolled_courses": 0,
+                 "notifications": [{"message": "Account pending admin approval", "icon": "fa-user-lock"}],
+                 "recent_attendance": []
+             })
+
+        # B. Attendance Rate (Total IN logs / Total Expected - Simplified calculation)
         cursor.execute("SELECT COUNT(*) as count FROM EventLog WHERE user_id = %s AND event_type = 'attendance_in'", (user_id,))
         total_attendance = cursor.fetchone()['count']
         
-        # B. Enrolled Courses (Get JSON)
-        cursor.execute("SELECT enrolled_courses FROM User WHERE user_id = %s", (user_id,))
-        courses_json = cursor.fetchone()['enrolled_courses']
-        # Handle if None or String
+        # C. Enrolled Courses (from user_data fetch)
+        courses_json = user_data['enrolled_courses']
         course_count = 0
         if courses_json:
             if isinstance(courses_json, str):
                 courses_json = json.loads(courses_json)
             course_count = len(courses_json)
 
-        # C. Notifications
+        # D. Notifications
         cursor.execute("SELECT * FROM Notification WHERE user_id = %s ORDER BY created_at DESC LIMIT 5", (user_id,))
         notifications = cursor.fetchall()
         
-        # D. Recent Attendance
+        # E. Recent Attendance
         cursor.execute("""
             SELECT e.timestamp, c.course_name, cm.room_name 
             FROM EventLog e 
@@ -506,11 +513,15 @@ def get_student_schedule(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
-        # 1. Get Student Section AND Enrolled Courses
-        cursor.execute("SELECT section, enrolled_courses FROM User WHERE user_id = %s", (user_id,))
+        # 1. Get Student Section, Enrolled Courses, at Verification Status
+        cursor.execute("SELECT section, enrolled_courses, verification_status FROM User WHERE user_id = %s", (user_id,))
         result = cursor.fetchone()
+
+        # SECURITY CHECK (ADDED)
+        if not result or result.get('verification_status') != 'Verified':
+             return jsonify({"error": "Account not verified"}), 403
         
-        if not result or not result['section']:
+        if not result['section']:
             return jsonify([]) # No section, no schedule
 
         section = result['section']
@@ -561,6 +572,12 @@ def get_attendance_history(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
+        # SECURITY CHECK (ADDED)
+        cursor.execute("SELECT verification_status FROM User WHERE user_id = %s", (user_id,))
+        result = cursor.fetchone()
+        if not result or result.get('verification_status') != 'Verified':
+            return jsonify({"error": "Account not verified"}), 403
+
         sql = """
             SELECT e.timestamp, e.event_type, e.confidence_score, cm.room_name
             FROM EventLog e
@@ -576,6 +593,41 @@ def get_attendance_history(user_id):
     finally:
         cursor.close()
         conn.close()
+        
+# --- TEMPORARY STATUS CHECK API (IDAGDAG ITO PARA MA-DIAGNOSE ANG PENDING ISSUE) ---
+@app.route('/check-status/<string:email>', methods=['GET'])
+def check_admin_status(email):
+    conn = get_db_connection()
+    if not conn: return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        sql = "SELECT verification_status, role FROM User WHERE email = %s"
+        cursor.execute(sql, (email,))
+        user = cursor.fetchone()
 
+        if user:
+            print(f"DB Status Report for {email}: {user['verification_status']}")
+            return jsonify({
+                "email": email,
+                "role": user['role'],
+                "status": user['verification_status']
+            }), 200
+        else:
+            return jsonify({"error": "User not found in DB"}), 404
+
+    except Exception as e:
+        print(f"Status Check Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ==========================================
+# APP RUN BLOCK (NAWALA SA PREVIOUS SNIPPET)
+# ==========================================
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Tiyakin na naka-comment out na ang lahat ng one-time scripts dito
+    # run_one_time_migration() 
+    # force_verify_admin() 
+    app.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
