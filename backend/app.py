@@ -713,6 +713,60 @@ def get_attendance_history(user_id):
         cursor.close()
         conn.close()
 
+@app.route('/api/student/report/robust-summary/<int:user_id>', methods=['GET'])
+def get_student_robust_report(user_id):
+    conn = get_db_connection()
+    if not conn: 
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # 1. Verification & Security Check
+        cursor.execute("SELECT verification_status, enrolled_courses FROM User WHERE user_id = %s", (user_id,))
+        user_meta = cursor.fetchone()
+        
+        if not user_meta or user_meta['verification_status'] != 'Verified':
+            return jsonify({"error": "Account not verified for report access"}), 403
+
+        # 2. Detailed Analytics Query
+        # This calculates total presence, late count, and maps them to subject names
+        sql = """
+            SELECT 
+                s.subject_code,
+                s.subject_description AS course_name,
+                COUNT(e.log_id) AS total_attendance,
+                SUM(CASE WHEN e.remarks LIKE '%Late%' THEN 1 ELSE 0 END) AS late_count,
+                MAX(e.timestamp) AS last_attended
+            FROM Subjects s
+            LEFT JOIN ClassSchedule cs ON s.subject_code = cs.course_code
+            LEFT JOIN EventLog e ON cs.schedule_id = e.schedule_id AND e.user_id = %s
+            WHERE e.event_type = 'attendance_in' OR e.event_type IS NULL
+            GROUP BY s.subject_code
+        """
+        
+        cursor.execute(sql, (user_id,))
+        report_data = cursor.fetchall()
+
+        # 3. Data Cleaning for JSON
+        for row in report_data:
+            if row['last_attended']:
+                row['last_attended'] = row['last_attended'].isoformat()
+            # Calculate a simple performance metric
+            row['status_summary'] = "Good Standing" if int(row['late_count'] or 0) < 3 else "Needs Improvement"
+
+        return jsonify({
+            "generated_at": datetime.now().isoformat(),
+            "student_id": user_id,
+            "report_data": report_data
+        }), 200
+
+    except Exception as e:
+        print(f"❌ Robust Report Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 # ==========================================
 # API: FACULTY DASHBOARD STATS (MODIFIED for Verification Check)
 # ==========================================
@@ -730,7 +784,6 @@ def get_faculty_schedule_endpoint(user_id):
              return jsonify({"error": "Account not verified"}), 403
 
         today_name = datetime.now().strftime('%A')
-        
         sql = """
             SELECT 
                 cs.schedule_id, 
