@@ -8,7 +8,7 @@
     display: grid;
     grid-template-columns: 1fr; /* Gawing isang column lang ang main layout para sa preview */
     gap: 30px;
-    padding-left: 30px;
+    /* Removed padding-left since parent .main-content-area already handles sidebar spacing */
 }
 
 .admin-reports-main-title {

@@ -66,7 +66,8 @@ const FacultySidebar = ({ user }) => {
 // ===========================================
 // 2. Main FacultyLayout Component
 // ===========================================
-const FacultyLayout = () => {
+// ✅ FIX: Added { children } prop here
+const FacultyLayout = ({ children }) => {
     const navigate = useNavigate();
 
     // States for user data and loading
@@ -103,10 +104,6 @@ const FacultyLayout = () => {
                 return;
             }
 
-            // --- 3. FETCH LIVE STATS (Optional) ---
-            // You can fetch notification counts here if needed, similar to StudentLayout
-            // For now, we assume notifications are inside the user object or handled by Header
-
             // Set User Data
             setUser({
                 ...parsedUser,
@@ -135,7 +132,8 @@ const FacultyLayout = () => {
                 <FacultySidebar user={user} />
 
                 <div className="main-content-area">
-                    <Outlet context={{ user }} />
+                    {/* ✅ FIX: Render children if they exist, otherwise try Outlet */}
+                    {children ? children : <Outlet context={{ user }} />}
                 </div>
             </div>
         </div>
