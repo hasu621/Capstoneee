@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import axios from 'axios'; 
-import './FacultyLayout.css'; 
-import '../ZCommon/Utility.css'; 
-import Header from '../ZCommon/Header'; 
+import axios from 'axios';
+import './FacultyLayout.css';
+import '../Common/Utility.css';
+import Header from '../Common/Header';
 
 // --- THEME DEFINITION ---
 const facultyTheme = {
-    primary: '#A62525', 
+    primary: '#A62525',
     dark: '#c82333',
     lightBg: 'rgba(255, 255, 255, 0.15)',
     text: '#FFFFFF'
@@ -18,9 +18,9 @@ const facultyTheme = {
 // ===========================================
 const FacultySidebar = ({ user }) => {
     // --- LOGIC: Check if user is a Department Head ---
-    const isDeptHead = user?.faculty_status === 'Head' || 
-                       user?.faculty_status === 'Department Head' || 
-                       user?.role === 'dept_head';
+    const isDeptHead = user?.faculty_status === 'Head' ||
+        user?.faculty_status === 'Department Head' ||
+        user?.role === 'dept_head';
 
     const navItems = [
         { name: 'Dashboard', icon: 'fas fa-th-large', to: '/faculty-dashboard' },
@@ -30,10 +30,10 @@ const FacultySidebar = ({ user }) => {
     ];
 
     if (isDeptHead) {
-        navItems.push({ 
-            name: 'Department Mgmt', 
-            icon: 'fas fa-university', 
-            to: '/faculty-dept-management' 
+        navItems.push({
+            name: 'Department Mgmt',
+            icon: 'fas fa-university',
+            to: '/faculty-dept-management'
         });
     }
 
@@ -69,15 +69,15 @@ const FacultySidebar = ({ user }) => {
 // ✅ FIX: Added { children } prop here
 const FacultyLayout = ({ children }) => {
     const navigate = useNavigate();
-    
+
     // States for user data and loading
-    const [user, setUser] = useState(null); 
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadUserData = async () => {
             const storedUserJson = localStorage.getItem('currentUser');
-            
+
             if (!storedUserJson) {
                 navigate('/');
                 setLoading(false);
@@ -91,33 +91,35 @@ const FacultyLayout = ({ children }) => {
             if (parsedUser.verification_status !== 'Verified') {
                 alert("Access denied. Your account is still pending verification.");
                 localStorage.removeItem('currentUser'); // Force logout
-                navigate('/'); 
-                setLoading(false); 
-                return; 
+                navigate('/');
+                setLoading(false);
+                return;
             }
 
             // --- 2. SECURITY CHECK: ROLE ---
             if (role !== 'faculty' && role !== 'dept_head') {
                 alert("Access denied. Authorized for Faculty only.");
-                navigate('/'); 
+                navigate('/');
                 setLoading(false);
                 return;
             }
 
             // Set User Data
             setUser({
-                ...parsedUser, 
-                faculty_status: parsedUser.faculty_status || 'Regular' 
+                ...parsedUser,
+                // Fix: Remove hardcoded default avatar. 
+                // Let Header generate initials if avatar is null/empty.
+                faculty_status: parsedUser.faculty_status || 'Regular'
             });
-            
-            setLoading(false); 
+
+            setLoading(false);
         };
 
         loadUserData();
     }, [navigate]);
 
     if (loading) {
-        return <div style={{textAlign: 'center', paddingTop: '100px', color: '#666'}}>Loading dashboard...</div>;
+        return <div style={{ textAlign: 'center', paddingTop: '100px', color: '#666' }}>Loading dashboard...</div>;
     }
 
     if (!user) return null;
@@ -125,10 +127,10 @@ const FacultyLayout = ({ children }) => {
     return (
         <div className="dashboard-container">
             <Header theme={facultyTheme} user={user} />
-            
+
             <div className="dashboard-body">
                 <FacultySidebar user={user} />
-                
+
                 <div className="main-content-area">
                     {/* ✅ FIX: Render children if they exist, otherwise try Outlet */}
                     {children ? children : <Outlet context={{ user }} />}
