@@ -3,8 +3,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import FacultyLayout from './FacultyLayout'; 
 import './FacultyReportsPage.css';
-import { Download, BarChart3, Clock, UserCheck, AlertCircle, CheckCircle2, Info, FileDown } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+// REMOVED: Recharts imports to prevent the crash
+import { BarChart3, Clock, UserCheck, AlertCircle, CheckCircle2, FileDown } from 'lucide-react';
 
 // Full Catalog from your Faculty Module documentation
 const facultyReportCatalog = {
@@ -61,9 +61,9 @@ const FacultyReportsPage = () => {
 
     // Visual Preview Data (Mock)
     const previewData = [
-        { name: 'On-Time', value: 82, color: '#4CAF50' },
-        { name: 'Late', value: 12, color: '#FFC107' },
-        { name: 'Absent', value: 6, color: '#F44336' },
+        { name: 'On-Time', value: 82, color: '#2ecc71' }, // Green
+        { name: 'Late', value: 12, color: '#f1c40f' },   // Yellow
+        { name: 'Absent', value: 6, color: '#e74c3c' },  // Red
     ];
 
     // AI Insight Generator
@@ -157,7 +157,7 @@ const FacultyReportsPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {generatedReports.map(rep => (
+                            {generatedReports.length > 0 ? generatedReports.map(rep => (
                                 <tr key={rep.id}>
                                     <td><strong>{rep.title}</strong></td>
                                     <td>{rep.subject}</td>
@@ -168,7 +168,13 @@ const FacultyReportsPage = () => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            )) : (
+                                <tr>
+                                    <td colSpan="4" style={{textAlign:'center', color:'#888', padding:'20px'}}>
+                                        No reports generated yet this session.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -178,7 +184,7 @@ const FacultyReportsPage = () => {
                         <div className="fac-modal-content large">
                             <div className="fac-modal-header">
                                 <h2>Configuring: {activeCategory.title}</h2>
-                                <button className="close-x" onClick={() => setModalOpen(false)}>&times;</button>
+                                <button className="close-x" style={{background:'none', border:'none', fontSize:'1.5em', cursor:'pointer'}} onClick={() => setModalOpen(false)}>&times;</button>
                             </div>
                             
                             <div className="fac-modal-body split-view">
@@ -196,28 +202,50 @@ const FacultyReportsPage = () => {
                                 </div>
 
                                 <div className="fac-report-preview-pane">
-                                    <div className="preview-status-header" style={{borderColor: aiInsight.color}}>
-                                        <div className="status-badge" style={{backgroundColor: aiInsight.color}}>
-                                            {aiInsight.icon} {aiInsight.status}
+                                    {aiInsight && (
+                                        <div className="preview-status-header" style={{borderColor: aiInsight.color, borderLeft:'4px solid'}}>
+                                            <div className="status-badge" style={{backgroundColor: aiInsight.color, color:'white', padding:'4px 10px', borderRadius:'12px', display:'inline-flex', alignItems:'center', gap:'5px', fontSize:'0.75em', fontWeight:'bold', marginBottom:'5px'}}>
+                                                {aiInsight.icon} {aiInsight.status}
+                                            </div>
+                                            <p style={{margin:'0', fontSize:'0.9em', color:'#444'}}>{aiInsight.message}</p>
                                         </div>
-                                        <p>{aiInsight.message}</p>
-                                    </div>
+                                    )}
 
                                     <div className="preview-chart-container">
                                         <div className="preview-header"><BarChart3 size={18} /> Visual Preview</div>
-                                        <div style={{ width: '100%', height: 160 }}>
-                                            <ResponsiveContainer>
-                                                <BarChart data={previewData}>
-                                                    <XAxis dataKey="name" fontSize={11} />
-                                                    <YAxis fontSize={11} />
-                                                    <Tooltip cursor={{fill: '#f5f5f5'}} />
-                                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                                        {previewData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                                        ))}
-                                                    </Bar>
-                                                </BarChart>
-                                            </ResponsiveContainer>
+                                        
+                                        {/* CUSTOM CSS-ONLY CHART: CRASH PROOF */}
+                                        <div style={{ 
+                                            display: 'flex', 
+                                            alignItems: 'flex-end', 
+                                            height: '160px', 
+                                            gap: '20px', 
+                                            padding: '20px 10px 0',
+                                            borderBottom: '1px solid #eee'
+                                        }}>
+                                            {previewData.map((data, index) => (
+                                                <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' }}>
+                                                    <div style={{
+                                                        height: `${data.value}%`,
+                                                        width: '40px',
+                                                        backgroundColor: data.color,
+                                                        borderRadius: '6px 6px 0 0',
+                                                        transition: 'height 0.5s ease',
+                                                        position: 'relative'
+                                                    }}>
+                                                        <span style={{
+                                                            position: 'absolute',
+                                                            top: '-20px',
+                                                            left: '50%',
+                                                            transform: 'translateX(-50%)',
+                                                            fontWeight: 'bold',
+                                                            fontSize: '0.85em',
+                                                            color: '#333'
+                                                        }}>{data.value}%</span>
+                                                    </div>
+                                                    <span style={{ fontSize: '0.8em', marginTop: '10px', color: '#666', fontWeight: '500' }}>{data.name}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
