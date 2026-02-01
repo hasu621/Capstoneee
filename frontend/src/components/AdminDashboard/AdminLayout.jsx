@@ -23,6 +23,7 @@ const AdminSidebar = ({ user }) => {
     // Nav items: TINANGGAL ang 'Verification' link
     const navItems = [
         { name: 'Dashboard', icon: 'fas fa-th-large', to: '/admin-dashboard' },
+        { name: 'Live Detection', icon: 'fas fa-video', to: '/admin-live-detection' },
         { name: 'Application', icon: 'fas fa-file-alt', to: '/admin-application' },
         // TINANGGAL: { name: 'Verification', icon: 'fas fa-user-check', to: '/admin-verification' }, 
         { name: 'User Management', icon: 'fas fa-users', to: '/admin-user-management' },

@@ -15,6 +15,8 @@ import UserManagementPage from './components/AdminDashboard/UserManagementPage';
 import ApplicationPage from './components/AdminDashboard/ApplicationPage'; // Gagamitin ito para sa Verification
 import ReportsPage from './components/AdminDashboard/ReportsPage';
 import SystemLogsPage from './components/AdminDashboard/SystemLogsPage';
+import AdminAttendanceRecordsPage from './components/AdminDashboard/AdminAttendanceRecordsPage';
+import LiveDetectionPage from './components/AdminDashboard/LiveDetectionPage';
 // TINANGGAL: import UserVerificationPage from './components/AdminDashboard/UserVerificationPage'; 
 
 // --- Import Faculty Pages ---
@@ -35,6 +37,8 @@ import MyProfilePage from './components/Common/MyProfilePage';
 import HelpSupportPage from './components/Common/HelpSupportPage';
 import SettingsPage from './components/Common/SettingsPage';
 import NotificationsPage from './components/Common/NotificationsPage';
+import AttendanceCapturePage from './components/Common/AttendanceCapturePage';
+
 
 function App() {
     return (
@@ -49,11 +53,13 @@ function App() {
                     {/* --- Admin Routes (using AdminLayout) --- */}
                     <Route element={<AdminLayout />}>
                         <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+                        <Route path="/admin-live-detection" element={<LiveDetectionPage />} />
                         <Route path="/admin-application" element={<ApplicationPage />} />
                         <Route path="/admin-user-management" element={<UserManagementPage />} />
                         {/* TINANGGAL: <Route path="/admin-verification" element={<UserVerificationPage />} /> */}
                         <Route path="/admin-reports" element={<ReportsPage />} />
                         <Route path="/admin-logs" element={<SystemLogsPage />} />
+                        <Route path="/admin-attendance-records" element={<AdminAttendanceRecordsPage />} />
                     </Route>
 
                     {/* --- Faculty Routes (using FacultyLayout) --- */}
@@ -75,6 +81,9 @@ function App() {
                         <Route path="/student-notifications" element={<NotificationsPage />} />
                         <Route path="/student-access-requests" element={<AttendanceHistoryPage />} />
                     </Route>
+
+                    {/* --- Standalone Camera Route (No Layout - For Classroom Display) --- */}
+                    <Route path="/attendance-capture" element={<AttendanceCapturePage />} />
 
                     {/* --- Common Routes (Full Pages) --- */}
                     <Route path="/profile" element={<MyProfilePage />} />
